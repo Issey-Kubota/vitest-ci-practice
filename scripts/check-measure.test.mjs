@@ -10,17 +10,19 @@ import { measure, runProcess, validateOutputs } from './measure.mjs'
 const root = fileURLToPath(new URL('..', import.meta.url))
 await mkdir(join(root, 'artifacts'), { recursive: true })
 const evidence = await mkdtemp(join(root, 'artifacts', 'measure-regression-'))
-const old = JSON.parse(await readFile(join(root, 'results/baseline-1.json')))
-const historicalPath = old.testResults[0].name.split('/tests/')[0]
-const oldCoverage = old.coverageMap
-// Derive summary from the official saved coverage map for artificial validator cases.
+// Minimal reporter fixture: fixed stale timestamp, neutral paths, no measured timings.
+const old = JSON.parse(await readFile(join(root, 'scripts/fixtures/vitest-success.json')))
+const fixtureRoot = '/fixture'
+// Synthetic coverage totals for validator tests; never performance evidence.
 const cov = { total: { lines: { total:64, covered:64, pct:100, skipped:0 }, statements:{total:96,covered:96,pct:100,skipped:0}, functions:{total:64,covered:64,pct:100,skipped:0}, branches:{total:64,covered:48,pct:75,skipped:0} } }
-for (const key of Object.keys(oldCoverage)) cov[key] = {}
+for (let i = 1; i <= 16; i++) cov[`${fixtureRoot}/src/features/feature-${String(i).padStart(2, '0')}.ts`] = {}
 const processResult = { code:0, signal:null, spawnError:null, startedAt:Date.now()-1, endedAt:Date.now()+1, stdout:'Duration 2.0s (import 50%)', stderr:'__P29_CPU_USER=1.0 __P29_CPU_SYSTEM=0.5', wallMs:2 }
 const freshReport = () => ({ ...structuredClone(old), startTime:processResult.startedAt })
 async function fixture(label) {
   const dir = await mkdtemp(join(tmpdir(), 'p29-measure-'))
-  for (const name of ['scripts', 'reference', 'tests', 'src', 'results', 'package.json', 'package-lock.json', 'vitest.config.ts']) await cp(join(root,name),join(dir,name),{recursive:true})
+  for (const name of ['scripts', 'reference', 'tests', 'src', 'package.json', 'package-lock.json', 'vitest.config.ts']) await cp(join(root,name),join(dir,name),{recursive:true})
+  await mkdir(join(dir, 'results'))
+  await writeFile(join(dir, 'results/baseline-1.json'), JSON.stringify(old))
   await symlink(join(root,'node_modules'),join(dir,'node_modules'))
   await writeFile(join(evidence,`${label}-fixture.txt`),dir+'\n')
   return dir
@@ -33,11 +35,11 @@ async function preserve(label,result) {
   await cp(result.output,join(evidence,label+'-outputs'),{recursive:true})
 }
 
-test('normal official report, fixed test IDs and coverage are accepted', () => {
-  assert.equal(validateOutputs(processResult,freshReport(),cov,{valid:true},historicalPath).valid,true)
+test('valid reporter fixture, fixed test IDs and coverage are accepted', () => {
+  assert.equal(validateOutputs(processResult,freshReport(),cov,{valid:true},fixtureRoot).valid,true)
 })
 test('stale success JSON is rejected even with successful process exit', () => {
-  const r = validateOutputs(processResult,old,cov,{valid:true},historicalPath)
+  const r = validateOutputs(processResult,old,cov,{valid:true},fixtureRoot)
   assert.equal(r.valid,false); assert.ok(r.reasons.some(x=>x.startsWith('stale_or_invalid')))
 })
 test('missing JSON, coverage, wrong test ID, bad exit or missing timing cannot pass', () => {
@@ -45,9 +47,9 @@ test('missing JSON, coverage, wrong test ID, bad exit or missing timing cannot p
     ['json',processResult,null,cov],['coverage',processResult,freshReport(),null],
     ['exit',{...processResult,code:1},freshReport(),cov],['timing',{...processResult,stderr:''},freshReport(),cov],
     ['id',processResult,{...freshReport(),testResults:[]},cov]
-  ]) assert.equal(validateOutputs(p,j,c,{valid:true},historicalPath).valid,false,name)
+  ]) assert.equal(validateOutputs(p,j,c,{valid:true},fixtureRoot).valid,false,name)
 })
-test('old bundled success files remain untouched when six fresh reports are missing', async () => {
+test('existing success files remain untouched when six fresh reports are missing', async () => {
   const dir = await fixture('missing-json')
   const before = await readFile(join(dir,'results/baseline-1.json'))
   const r = await measure(dir,async()=>({...processResult,startedAt:Date.now(),endedAt:Date.now()}))
@@ -84,8 +86,8 @@ test('one missing run prevents comparison even when five runs otherwise validate
     if (count === 3) return {...result,code:1}
     const report = structuredClone(old)
     report.startTime = result.startedAt
-    for (const suite of report.testResults) suite.name = suite.name.replace(historicalPath,dir)
-    const summary = Object.fromEntries(Object.entries(cov).map(([k,v])=>[k.replace(historicalPath,dir),v]))
+    for (const suite of report.testResults) suite.name = suite.name.replace(fixtureRoot,dir)
+    const summary = Object.fromEntries(Object.entries(cov).map(([k,v])=>[k.replace(fixtureRoot,dir),v]))
     const raw = args.find(x=>x.startsWith('--outputFile.json=')).slice('--outputFile.json='.length)
     const coverageDir = args.find(x=>x.startsWith('--coverage.reportsDirectory=')).slice('--coverage.reportsDirectory='.length)
     await mkdir(coverageDir,{recursive:true})

@@ -1,9 +1,0 @@
-{
-  "command": "node --test scripts/check-manifest.test.mjs",
-  "startedAt": "2026-09-21T10:44:12.065604+00:00",
-  "endedAt": "2026-09-21T10:44:12.462312+00:00",
-  "commandWaitSeconds": 0.39644748900173,
-  "exitCode": 0,
-  "nodeVersion": "v24.19.0",
-  "workingTestsMutated": false
-}

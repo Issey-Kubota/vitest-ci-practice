@@ -1,0 +1,291 @@
+{
+  "numTotalTests": 32,
+  "numPassedTests": 32,
+  "numFailedTests": 0,
+  "numPendingTests": 0,
+  "numTodoTests": 0,
+  "success": true,
+  "startTime": 0,
+  "snapshot": {
+    "total": 16,
+    "matched": 16,
+    "unmatched": 0,
+    "updated": 0,
+    "added": 0,
+    "failure": false
+  },
+  "testResults": [
+    {
+      "name": "/fixture/tests/feature-01.test.ts",
+      "status": "passed",
+      "message": "",
+      "assertionResults": [
+        {
+          "fullName": "feature-01 round-trips a catalogue key",
+          "status": "passed",
+          "failureMessages": []
+        },
+        {
+          "fullName": "feature-01 returns -1 for an unknown key",
+          "status": "passed",
+          "failureMessages": []
+        }
+      ]
+    },
+    {
+      "name": "/fixture/tests/feature-02.test.ts",
+      "status": "passed",
+      "message": "",
+      "assertionResults": [
+        {
+          "fullName": "feature-02 round-trips a catalogue key",
+          "status": "passed",
+          "failureMessages": []
+        },
+        {
+          "fullName": "feature-02 returns -1 for an unknown key",
+          "status": "passed",
+          "failureMessages": []
+        }
+      ]
+    },
+    {
+      "name": "/fixture/tests/feature-03.test.ts",
+      "status": "passed",
+      "message": "",
+      "assertionResults": [
+        {
+          "fullName": "feature-03 round-trips a catalogue key",
+          "status": "passed",
+          "failureMessages": []
+        },
+        {
+          "fullName": "feature-03 returns -1 for an unknown key",
+          "status": "passed",
+          "failureMessages": []
+        }
+      ]
+    },
+    {
+      "name": "/fixture/tests/feature-04.test.ts",
+      "status": "passed",
+      "message": "",
+      "assertionResults": [
+        {
+          "fullName": "feature-04 round-trips a catalogue key",
+          "status": "passed",
+          "failureMessages": []
+        },
+        {
+          "fullName": "feature-04 returns -1 for an unknown key",
+          "status": "passed",
+          "failureMessages": []
+        }
+      ]
+    },
+    {
+      "name": "/fixture/tests/feature-05.test.ts",
+      "status": "passed",
+      "message": "",
+      "assertionResults": [
+        {
+          "fullName": "feature-05 round-trips a catalogue key",
+          "status": "passed",
+          "failureMessages": []
+        },
+        {
+          "fullName": "feature-05 returns -1 for an unknown key",
+          "status": "passed",
+          "failureMessages": []
+        }
+      ]
+    },
+    {
+      "name": "/fixture/tests/feature-06.test.ts",
+      "status": "passed",
+      "message": "",
+      "assertionResults": [
+        {
+          "fullName": "feature-06 round-trips a catalogue key",
+          "status": "passed",
+          "failureMessages": []
+        },
+        {
+          "fullName": "feature-06 returns -1 for an unknown key",
+          "status": "passed",
+          "failureMessages": []
+        }
+      ]
+    },
+    {
+      "name": "/fixture/tests/feature-07.test.ts",
+      "status": "passed",
+      "message": "",
+      "assertionResults": [
+        {
+          "fullName": "feature-07 round-trips a catalogue key",
+          "status": "passed",
+          "failureMessages": []
+        },
+        {
+          "fullName": "feature-07 returns -1 for an unknown key",
+          "status": "passed",
+          "failureMessages": []
+        }
+      ]
+    },
+    {
+      "name": "/fixture/tests/feature-08.test.ts",
+      "status": "passed",
+      "message": "",
+      "assertionResults": [
+        {
+          "fullName": "feature-08 round-trips a catalogue key",
+          "status": "passed",
+          "failureMessages": []
+        },
+        {
+          "fullName": "feature-08 returns -1 for an unknown key",
+          "status": "passed",
+          "failureMessages": []
+        }
+      ]
+    },
+    {
+      "name": "/fixture/tests/feature-09.test.ts",
+      "status": "passed",
+      "message": "",
+      "assertionResults": [
+        {
+          "fullName": "feature-09 round-trips a catalogue key",
+          "status": "passed",
+          "failureMessages": []
+        },
+        {
+          "fullName": "feature-09 returns -1 for an unknown key",
+          "status": "passed",
+          "failureMessages": []
+        }
+      ]
+    },
+    {
+      "name": "/fixture/tests/feature-10.test.ts",
+      "status": "passed",
+      "message": "",
+      "assertionResults": [
+        {
+          "fullName": "feature-10 round-trips a catalogue key",
+          "status": "passed",
+          "failureMessages": []
+        },
+        {
+          "fullName": "feature-10 returns -1 for an unknown key",
+          "status": "passed",
+          "failureMessages": []
+        }
+      ]
+    },
+    {
+      "name": "/fixture/tests/feature-11.test.ts",
+      "status": "passed",
+      "message": "",
+      "assertionResults": [
+        {
+          "fullName": "feature-11 round-trips a catalogue key",
+          "status": "passed",
+          "failureMessages": []
+        },
+        {
+          "fullName": "feature-11 returns -1 for an unknown key",
+          "status": "passed",
+          "failureMessages": []
+        }
+      ]
+    },
+    {
+      "name": "/fixture/tests/feature-12.test.ts",
+      "status": "passed",
+      "message": "",
+      "assertionResults": [
+        {
+          "fullName": "feature-12 round-trips a catalogue key",
+          "status": "passed",
+          "failureMessages": []
+        },
+        {
+          "fullName": "feature-12 returns -1 for an unknown key",
+          "status": "passed",
+          "failureMessages": []
+        }
+      ]
+    },
+    {
+      "name": "/fixture/tests/feature-13.test.ts",
+      "status": "passed",
+      "message": "",
+      "assertionResults": [
+        {
+          "fullName": "feature-13 round-trips a catalogue key",
+          "status": "passed",
+          "failureMessages": []
+        },
+        {
+          "fullName": "feature-13 returns -1 for an unknown key",
+          "status": "passed",
+          "failureMessages": []
+        }
+      ]
+    },
+    {
+      "name": "/fixture/tests/feature-14.test.ts",
+      "status": "passed",
+      "message": "",
+      "assertionResults": [
+        {
+          "fullName": "feature-14 round-trips a catalogue key",
+          "status": "passed",
+          "failureMessages": []
+        },
+        {
+          "fullName": "feature-14 returns -1 for an unknown key",
+          "status": "passed",
+          "failureMessages": []
+        }
+      ]
+    },
+    {
+      "name": "/fixture/tests/feature-15.test.ts",
+      "status": "passed",
+      "message": "",
+      "assertionResults": [
+        {
+          "fullName": "feature-15 round-trips a catalogue key",
+          "status": "passed",
+          "failureMessages": []
+        },
+        {
+          "fullName": "feature-15 returns -1 for an unknown key",
+          "status": "passed",
+          "failureMessages": []
+        }
+      ]
+    },
+    {
+      "name": "/fixture/tests/feature-16.test.ts",
+      "status": "passed",
+      "message": "",
+      "assertionResults": [
+        {
+          "fullName": "feature-16 round-trips a catalogue key",
+          "status": "passed",
+          "failureMessages": []
+        },
+        {
+          "fullName": "feature-16 returns -1 for an unknown key",
+          "status": "passed",
+          "failureMessages": []
+        }
+      ]
+    }
+  ]
+}

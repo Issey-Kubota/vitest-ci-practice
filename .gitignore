@@ -1,3 +1,7 @@
 node_modules/
 coverage/
 .vitest/
+
+# Generated reports and run logs
+artifacts/
+results/

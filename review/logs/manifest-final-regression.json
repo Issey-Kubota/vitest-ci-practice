@@ -1,9 +1,0 @@
-{
-  "command": "node --test --test-reporter=tap scripts/check-manifest.test.mjs",
-  "startedAt": "2026-09-21T10:44:59.022215+00:00",
-  "endedAt": "2026-09-21T10:44:59.579908+00:00",
-  "commandWaitSeconds": 0.5573929860001954,
-  "exitCode": 0,
-  "nodeVersion": "v24.19.0",
-  "workingTestsMutated": false
-}
