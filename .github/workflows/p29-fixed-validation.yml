@@ -15,15 +15,18 @@ jobs:
         shell: bash
     env:
       TZ: UTC
-      P29_EVIDENCE: ${{ runner.temp }}/p29-ci-${{ github.run_id }}-${{ github.run_attempt }}
-      npm_config_cache: ${{ runner.temp }}/p29-npm-${{ github.run_id }}-${{ github.run_attempt }}
       npm_config_audit: 'false'
       npm_config_fund: 'false'
       npm_config_fetch_retries: '0'
     steps:
       - name: Start isolated evidence record
         id: start
+        env:
+          P29_EVIDENCE: ${{ runner.temp }}/p29-ci-${{ github.run_id }}-${{ github.run_attempt }}
+          npm_config_cache: ${{ runner.temp }}/p29-npm-${{ github.run_id }}-${{ github.run_attempt }}
         run: |
+          printf 'P29_EVIDENCE=%s\n' "$P29_EVIDENCE" >> "$GITHUB_ENV"
+          printf 'npm_config_cache=%s\n' "$npm_config_cache" >> "$GITHUB_ENV"
           python3 - <<'PY'
           import datetime, json, os, pathlib, platform
           out = pathlib.Path(os.environ['P29_EVIDENCE'])
