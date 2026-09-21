@@ -1,0 +1,28 @@
+{
+  "command": [
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+    "/workspace/scratch/3be8439307aa/p29-vitest-example/node_modules/vitest/vitest.mjs",
+    "run",
+    "tests/feature-01.test.ts",
+    "--config",
+    "vitest.config.ts",
+    "--no-coverage",
+    "--reporter=default",
+    "--reporter=json",
+    "--outputFile.json=/workspace/scratch/3be8439307aa/p29-vitest-example/artifacts/failure-caa614d7-c1e2-4f66-bff6-ab74994de52c/candidate/implementation_fault/vitest.json"
+  ],
+  "startedAt": "2026-09-21T10:48:19.813Z",
+  "endedAt": "2026-09-21T10:48:20.509Z",
+  "elapsedSeconds": 0.695594341,
+  "exitCode": 1,
+  "signal": null,
+  "spawnError": null,
+  "reportError": null,
+  "classification": "implementation_fault_detected",
+  "expectedFailureDetected": true,
+  "reasons": [],
+  "targetTestId": "feature-01 round-trips a catalogue key",
+  "failureMessages": [
+    "AssertionError: expected 138 to be 137 // Object.is equality\n    at /workspace/scratch/3be8439307aa/p29-vitest-example/tests/feature-01.test.ts:8:27\n    at file:///workspace/scratch/3be8439307aa/p29-vitest-example/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:1628:35\n    at file:///workspace/scratch/3be8439307aa/p29-vitest-example/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2783:26\n    at file:///workspace/scratch/3be8439307aa/p29-vitest-example/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:3319:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///workspace/scratch/3be8439307aa/p29-vitest-example/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:3314:10)\n    at file:///workspace/scratch/3be8439307aa/p29-vitest-example/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:3299:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///workspace/scratch/3be8439307aa/p29-vitest-example/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:3257:10)\n    at file:///workspace/scratch/3be8439307aa/p29-vitest-example/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:3876:64"
+  ]
+}

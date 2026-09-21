@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 1,
+  "sourceArchiveSha256": "d629f965fa81a959d5de08895b7f876f9468e58bdc0be962c99c60f30996b8b0",
+  "baselineReconstruction": "Original archive tests were candidate; only each exact designated direct import was changed back to ../src/features/index.js. Assertions and snapshots retain original archive bytes.",
+  "files": [
+    {
+      "path": "tests/feature-01.test.ts",
+      "baselineImport": "from '../src/features/index.js'",
+      "candidateImport": "from '../src/features/feature-01.js'",
+      "baselineContent": "import { describe, expect, it } from 'vitest'\nimport { key01, lookup01 } from '../src/features/index.js'\n\ndescribe('feature-01', () => {\n  it('round-trips a catalogue key', () => {\n    const key = key01(137)\n    expect(key).toMatchInlineSnapshot(`\"item-01-0137\"`)\n    expect(lookup01(key)).toBe(137)\n  })\n\n  it('returns -1 for an unknown key', () => {\n    expect(lookup01('missing')).toBe(-1)\n  })\n})\n",
+      "originalZipMemberSha256": "f5b39625301483aa3fd294d39ebbc593e97baf0e9ca160599da0bf4536125b1d"
+    },
+    {
+      "path": "tests/feature-02.test.ts",
+      "baselineImport": "from '../src/features/index.js'",
+      "candidateImport": "from '../src/features/feature-02.js'",
+      "baselineContent": "import { describe, expect, it } from 'vitest'\nimport { key02, lookup02 } from '../src/features/index.js'\n\ndescribe('feature-02', () => {\n  it('round-trips a catalogue key', () => {\n    const key = key02(137)\n    expect(key).toMatchInlineSnapshot(`\"item-02-0137\"`)\n    expect(lookup02(key)).toBe(137)\n  })\n\n  it('returns -1 for an unknown key', () => {\n    expect(lookup02('missing')).toBe(-1)\n  })\n})\n",
+      "originalZipMemberSha256": "00a880e4158273ebabb0f9beca3af03a976fa7fcb42593e32722ea364400d384"
+    },
+    {
+      "path": "tests/feature-03.test.ts",
+      "baselineImport": "from '../src/features/index.js'",
+      "candidateImport": "from '../src/features/feature-03.js'",
+      "baselineContent": "import { describe, expect, it } from 'vitest'\nimport { key03, lookup03 } from '../src/features/index.js'\n\ndescribe('feature-03', () => {\n  it('round-trips a catalogue key', () => {\n    const key = key03(137)\n    expect(key).toMatchInlineSnapshot(`\"item-03-0137\"`)\n    expect(lookup03(key)).toBe(137)\n  })\n\n  it('returns -1 for an unknown key', () => {\n    expect(lookup03('missing')).toBe(-1)\n  })\n})\n",
+      "originalZipMemberSha256": "2933381b8a846efebb9b14a6387243a7ef1d724b765b344b12d888a0e19ff767"
+    },
+    {
+      "path": "tests/feature-04.test.ts",
+      "baselineImport": "from '../src/features/index.js'",
+      "candidateImport": "from '../src/features/feature-04.js'",
+      "baselineContent": "import { describe, expect, it } from 'vitest'\nimport { key04, lookup04 } from '../src/features/index.js'\n\ndescribe('feature-04', () => {\n  it('round-trips a catalogue key', () => {\n    const key = key04(137)\n    expect(key).toMatchInlineSnapshot(`\"item-04-0137\"`)\n    expect(lookup04(key)).toBe(137)\n  })\n\n  it('returns -1 for an unknown key', () => {\n    expect(lookup04('missing')).toBe(-1)\n  })\n})\n",
+      "originalZipMemberSha256": "af844889e4e6fdfff03edc8e6c09d336e86fd9009f3070c1bb8596b5b2133fa9"
+    },
+    {
+      "path": "tests/feature-05.test.ts",
+      "baselineImport": "from '../src/features/index.js'",
+      "candidateImport": "from '../src/features/feature-05.js'",
+      "baselineContent": "import { describe, expect, it } from 'vitest'\nimport { key05, lookup05 } from '../src/features/index.js'\n\ndescribe('feature-05', () => {\n  it('round-trips a catalogue key', () => {\n    const key = key05(137)\n    expect(key).toMatchInlineSnapshot(`\"item-05-0137\"`)\n    expect(lookup05(key)).toBe(137)\n  })\n\n  it('returns -1 for an unknown key', () => {\n    expect(lookup05('missing')).toBe(-1)\n  })\n})\n",
+      "originalZipMemberSha256": "eec6fe86867838d837630c8bbac75f7478883fabed9e986683221d40b5cef13f"
+    },
+    {
+      "path": "tests/feature-06.test.ts",
+      "baselineImport": "from '../src/features/index.js'",
+      "candidateImport": "from '../src/features/feature-06.js'",
+      "baselineContent": "import { describe, expect, it } from 'vitest'\nimport { key06, lookup06 } from '../src/features/index.js'\n\ndescribe('feature-06', () => {\n  it('round-trips a catalogue key', () => {\n    const key = key06(137)\n    expect(key).toMatchInlineSnapshot(`\"item-06-0137\"`)\n    expect(lookup06(key)).toBe(137)\n  })\n\n  it('returns -1 for an unknown key', () => {\n    expect(lookup06('missing')).toBe(-1)\n  })\n})\n",
+      "originalZipMemberSha256": "ffc3390e9c4a3a7d3ab5bd5f53f692db190ec8992ade417218297b13ea777680"
+    },
+    {
+      "path": "tests/feature-07.test.ts",
+      "baselineImport": "from '../src/features/index.js'",
+      "candidateImport": "from '../src/features/feature-07.js'",
+      "baselineContent": "import { describe, expect, it } from 'vitest'\nimport { key07, lookup07 } from '../src/features/index.js'\n\ndescribe('feature-07', () => {\n  it('round-trips a catalogue key', () => {\n    const key = key07(137)\n    expect(key).toMatchInlineSnapshot(`\"item-07-0137\"`)\n    expect(lookup07(key)).toBe(137)\n  })\n\n  it('returns -1 for an unknown key', () => {\n    expect(lookup07('missing')).toBe(-1)\n  })\n})\n",
+      "originalZipMemberSha256": "31e5b5e4af4254fb9e9f2729cc6f776836fd0432d8a84246dabc56d70d196b71"
+    },
+    {
+      "path": "tests/feature-08.test.ts",
+      "baselineImport": "from '../src/features/index.js'",
+      "candidateImport": "from '../src/features/feature-08.js'",
+      "baselineContent": "import { describe, expect, it } from 'vitest'\nimport { key08, lookup08 } from '../src/features/index.js'\n\ndescribe('feature-08', () => {\n  it('round-trips a catalogue key', () => {\n    const key = key08(137)\n    expect(key).toMatchInlineSnapshot(`\"item-08-0137\"`)\n    expect(lookup08(key)).toBe(137)\n  })\n\n  it('returns -1 for an unknown key', () => {\n    expect(lookup08('missing')).toBe(-1)\n  })\n})\n",
+      "originalZipMemberSha256": "bda497b83f631af4bbbb4457782e937edf32cc80cccd1091a732cc0a672017ad"
+    },
+    {
+      "path": "tests/feature-09.test.ts",
+      "baselineImport": "from '../src/features/index.js'",
+      "candidateImport": "from '../src/features/feature-09.js'",
+      "baselineContent": "import { describe, expect, it } from 'vitest'\nimport { key09, lookup09 } from '../src/features/index.js'\n\ndescribe('feature-09', () => {\n  it('round-trips a catalogue key', () => {\n    const key = key09(137)\n    expect(key).toMatchInlineSnapshot(`\"item-09-0137\"`)\n    expect(lookup09(key)).toBe(137)\n  })\n\n  it('returns -1 for an unknown key', () => {\n    expect(lookup09('missing')).toBe(-1)\n  })\n})\n",
+      "originalZipMemberSha256": "8ea0e8933c813c9aae61a0474dc8543eccba859b66b5fa30fb3396eccea98a85"
+    },
+    {
+      "path": "tests/feature-10.test.ts",
+      "baselineImport": "from '../src/features/index.js'",
+      "candidateImport": "from '../src/features/feature-10.js'",
+      "baselineContent": "import { describe, expect, it } from 'vitest'\nimport { key10, lookup10 } from '../src/features/index.js'\n\ndescribe('feature-10', () => {\n  it('round-trips a catalogue key', () => {\n    const key = key10(137)\n    expect(key).toMatchInlineSnapshot(`\"item-10-0137\"`)\n    expect(lookup10(key)).toBe(137)\n  })\n\n  it('returns -1 for an unknown key', () => {\n    expect(lookup10('missing')).toBe(-1)\n  })\n})\n",
+      "originalZipMemberSha256": "d366b0a35896e7ba2d1c6f397ae0f5d51ee8170d1da42de4736838eef1a8f72b"
+    },
+    {
+      "path": "tests/feature-11.test.ts",
+      "baselineImport": "from '../src/features/index.js'",
+      "candidateImport": "from '../src/features/feature-11.js'",
+      "baselineContent": "import { describe, expect, it } from 'vitest'\nimport { key11, lookup11 } from '../src/features/index.js'\n\ndescribe('feature-11', () => {\n  it('round-trips a catalogue key', () => {\n    const key = key11(137)\n    expect(key).toMatchInlineSnapshot(`\"item-11-0137\"`)\n    expect(lookup11(key)).toBe(137)\n  })\n\n  it('returns -1 for an unknown key', () => {\n    expect(lookup11('missing')).toBe(-1)\n  })\n})\n",
+      "originalZipMemberSha256": "7da0cb67cec831ceab37df5c2f1f338693c97f7a7adc9df9211aecde4847e8ac"
+    },
+    {
+      "path": "tests/feature-12.test.ts",
+      "baselineImport": "from '../src/features/index.js'",
+      "candidateImport": "from '../src/features/feature-12.js'",
+      "baselineContent": "import { describe, expect, it } from 'vitest'\nimport { key12, lookup12 } from '../src/features/index.js'\n\ndescribe('feature-12', () => {\n  it('round-trips a catalogue key', () => {\n    const key = key12(137)\n    expect(key).toMatchInlineSnapshot(`\"item-12-0137\"`)\n    expect(lookup12(key)).toBe(137)\n  })\n\n  it('returns -1 for an unknown key', () => {\n    expect(lookup12('missing')).toBe(-1)\n  })\n})\n",
+      "originalZipMemberSha256": "2c45edc6d222257b3890e303fa51c4b31b254ce268b75ce6ae3d5d24242052f6"
+    },
+    {
+      "path": "tests/feature-13.test.ts",
+      "baselineImport": "from '../src/features/index.js'",
+      "candidateImport": "from '../src/features/feature-13.js'",
+      "baselineContent": "import { describe, expect, it } from 'vitest'\nimport { key13, lookup13 } from '../src/features/index.js'\n\ndescribe('feature-13', () => {\n  it('round-trips a catalogue key', () => {\n    const key = key13(137)\n    expect(key).toMatchInlineSnapshot(`\"item-13-0137\"`)\n    expect(lookup13(key)).toBe(137)\n  })\n\n  it('returns -1 for an unknown key', () => {\n    expect(lookup13('missing')).toBe(-1)\n  })\n})\n",
+      "originalZipMemberSha256": "4e6781982fcac643dbb28177c1b1749a29eebabf4021a16c707d0a864d527a13"
+    },
+    {
+      "path": "tests/feature-14.test.ts",
+      "baselineImport": "from '../src/features/index.js'",
+      "candidateImport": "from '../src/features/feature-14.js'",
+      "baselineContent": "import { describe, expect, it } from 'vitest'\nimport { key14, lookup14 } from '../src/features/index.js'\n\ndescribe('feature-14', () => {\n  it('round-trips a catalogue key', () => {\n    const key = key14(137)\n    expect(key).toMatchInlineSnapshot(`\"item-14-0137\"`)\n    expect(lookup14(key)).toBe(137)\n  })\n\n  it('returns -1 for an unknown key', () => {\n    expect(lookup14('missing')).toBe(-1)\n  })\n})\n",
+      "originalZipMemberSha256": "d23ac5edc16c0190dd3a392d5d6256d17f1aaf09c49a0d047b0e160d5dc5c1a2"
+    },
+    {
+      "path": "tests/feature-15.test.ts",
+      "baselineImport": "from '../src/features/index.js'",
+      "candidateImport": "from '../src/features/feature-15.js'",
+      "baselineContent": "import { describe, expect, it } from 'vitest'\nimport { key15, lookup15 } from '../src/features/index.js'\n\ndescribe('feature-15', () => {\n  it('round-trips a catalogue key', () => {\n    const key = key15(137)\n    expect(key).toMatchInlineSnapshot(`\"item-15-0137\"`)\n    expect(lookup15(key)).toBe(137)\n  })\n\n  it('returns -1 for an unknown key', () => {\n    expect(lookup15('missing')).toBe(-1)\n  })\n})\n",
+      "originalZipMemberSha256": "f0daacf1d21b95953ceb1cbed7645918036b2f0c26a9909845c733390d8f8404"
+    },
+    {
+      "path": "tests/feature-16.test.ts",
+      "baselineImport": "from '../src/features/index.js'",
+      "candidateImport": "from '../src/features/feature-16.js'",
+      "baselineContent": "import { describe, expect, it } from 'vitest'\nimport { key16, lookup16 } from '../src/features/index.js'\n\ndescribe('feature-16', () => {\n  it('round-trips a catalogue key', () => {\n    const key = key16(137)\n    expect(key).toMatchInlineSnapshot(`\"item-16-0137\"`)\n    expect(lookup16(key)).toBe(137)\n  })\n\n  it('returns -1 for an unknown key', () => {\n    expect(lookup16('missing')).toBe(-1)\n  })\n})\n",
+      "originalZipMemberSha256": "02571f0523916b6bedc0d892beb5f73a11453d27340bfd1097cce9cd1404f544"
+    }
+  ]
+}

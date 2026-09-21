@@ -1,0 +1,14 @@
+{
+  "records": [
+    {
+      "variant": "baseline",
+      "expectedFailureDetected": true,
+      "exitCode": 1
+    },
+    {
+      "variant": "candidate",
+      "expectedFailureDetected": true,
+      "exitCode": 1
+    }
+  ]
+}

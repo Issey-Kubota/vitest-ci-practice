@@ -1,0 +1,14 @@
+
+ RUN  v5.0.1 /workspace/scratch/3be8439307aa/p29-vitest-example
+
+ ❯ tests/feature-01.test.ts (2 tests | 1 failed) 12ms
+   ❯ feature-01 (2)
+     × round-trips a catalogue key 11ms
+     ✓ returns -1 for an unknown key 0ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed (2)
+   Start at  19:48:20
+   Duration  236ms (transform 53%, import 21%, tests 20%, worker 7%)
+
+JSON report written to /workspace/scratch/3be8439307aa/p29-vitest-example/artifacts/failure-caa614d7-c1e2-4f66-bff6-ab74994de52c/candidate/implementation_fault/vitest.json

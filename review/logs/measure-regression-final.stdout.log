@@ -1,0 +1,17 @@
+Regression evidence: /workspace/scratch/3be8439307aa/p29-vitest-example/artifacts/measure-regression-YmoELc
+✔ normal official report, fixed test IDs and coverage are accepted (5.478365ms)
+✔ stale success JSON is rejected even with successful process exit (1.304536ms)
+✔ missing JSON, coverage, wrong test ID, bad exit or missing timing cannot pass (7.883276ms)
+✔ old bundled success files remain untouched when six fresh reports are missing (2833.246885ms)
+✔ spawn ENOENT is reasoned invalid, not a detected test failure (2164.379636ms)
+✔ configuration mismatch blocks execution before comparison (228.79242ms)
+✔ one missing run prevents comparison even when five runs otherwise validate (2986.269664ms)
+✔ CLI exits nonzero when child exits zero but produces no new results (2657.242192ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 10993.096743

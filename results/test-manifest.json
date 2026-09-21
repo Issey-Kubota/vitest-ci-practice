@@ -1,0 +1,180 @@
+{
+  "files": [
+    {
+      "file": "feature-01.test.ts",
+      "ids": [
+        "feature-01",
+        "round-trips a catalogue key",
+        "returns -1 for an unknown key"
+      ],
+      "assertions": 3,
+      "snapshots": 1,
+      "normalizedSha256": "f92e30ad28327c9ed316d845f3fce00719a1a02b3b208730a91962da601843c7"
+    },
+    {
+      "file": "feature-02.test.ts",
+      "ids": [
+        "feature-02",
+        "round-trips a catalogue key",
+        "returns -1 for an unknown key"
+      ],
+      "assertions": 3,
+      "snapshots": 1,
+      "normalizedSha256": "59a381eccb8aa056051abb1987d9930654a27d57a3044713b7bb8151c089635f"
+    },
+    {
+      "file": "feature-03.test.ts",
+      "ids": [
+        "feature-03",
+        "round-trips a catalogue key",
+        "returns -1 for an unknown key"
+      ],
+      "assertions": 3,
+      "snapshots": 1,
+      "normalizedSha256": "2e8ece12951f0bf2918609283d925fe1be80a0b03c20f9cd85cb48954125c328"
+    },
+    {
+      "file": "feature-04.test.ts",
+      "ids": [
+        "feature-04",
+        "round-trips a catalogue key",
+        "returns -1 for an unknown key"
+      ],
+      "assertions": 3,
+      "snapshots": 1,
+      "normalizedSha256": "7d6d1004a018384045c1490d6cff37c20c12fffb953fa76b9cb177c506d608fe"
+    },
+    {
+      "file": "feature-05.test.ts",
+      "ids": [
+        "feature-05",
+        "round-trips a catalogue key",
+        "returns -1 for an unknown key"
+      ],
+      "assertions": 3,
+      "snapshots": 1,
+      "normalizedSha256": "8db4a7edc676d2adc0d5278b03131d5093eeb7c8fe613a46e9626f0ae80c6986"
+    },
+    {
+      "file": "feature-06.test.ts",
+      "ids": [
+        "feature-06",
+        "round-trips a catalogue key",
+        "returns -1 for an unknown key"
+      ],
+      "assertions": 3,
+      "snapshots": 1,
+      "normalizedSha256": "d4c8ae8ecfd2ecab8214f5508dde09a2f6d66d9f33c0fecb2a1dd6f8ef117579"
+    },
+    {
+      "file": "feature-07.test.ts",
+      "ids": [
+        "feature-07",
+        "round-trips a catalogue key",
+        "returns -1 for an unknown key"
+      ],
+      "assertions": 3,
+      "snapshots": 1,
+      "normalizedSha256": "c6ef452167b518e5bd2ef5e27e9d5057072fcdcfc021a7a9d5dd45470117423a"
+    },
+    {
+      "file": "feature-08.test.ts",
+      "ids": [
+        "feature-08",
+        "round-trips a catalogue key",
+        "returns -1 for an unknown key"
+      ],
+      "assertions": 3,
+      "snapshots": 1,
+      "normalizedSha256": "863f23084514e9808f734a37bd80b0868769141a23033f4e0bb3e1a03739be0f"
+    },
+    {
+      "file": "feature-09.test.ts",
+      "ids": [
+        "feature-09",
+        "round-trips a catalogue key",
+        "returns -1 for an unknown key"
+      ],
+      "assertions": 3,
+      "snapshots": 1,
+      "normalizedSha256": "9698edcfee9e2b5bbdf1b663ad17036a4448b05be6acf4b8a87ae704abfaa0f0"
+    },
+    {
+      "file": "feature-10.test.ts",
+      "ids": [
+        "feature-10",
+        "round-trips a catalogue key",
+        "returns -1 for an unknown key"
+      ],
+      "assertions": 3,
+      "snapshots": 1,
+      "normalizedSha256": "dd688f652be774398d274eae299f9e8e6da51c6a5cd22108a845dffba6c9bf01"
+    },
+    {
+      "file": "feature-11.test.ts",
+      "ids": [
+        "feature-11",
+        "round-trips a catalogue key",
+        "returns -1 for an unknown key"
+      ],
+      "assertions": 3,
+      "snapshots": 1,
+      "normalizedSha256": "8c8487eb27cdbc42a7e963e8dd2200c4650fd1ec1a47d81c07df3caa18274073"
+    },
+    {
+      "file": "feature-12.test.ts",
+      "ids": [
+        "feature-12",
+        "round-trips a catalogue key",
+        "returns -1 for an unknown key"
+      ],
+      "assertions": 3,
+      "snapshots": 1,
+      "normalizedSha256": "d187d4907b73a3acfe4147dd2372422c13fa528c5f5e99a6e6e4a02e462d5f0a"
+    },
+    {
+      "file": "feature-13.test.ts",
+      "ids": [
+        "feature-13",
+        "round-trips a catalogue key",
+        "returns -1 for an unknown key"
+      ],
+      "assertions": 3,
+      "snapshots": 1,
+      "normalizedSha256": "34fd1730492f1862739242e62482fec6ecfc30df26505d4643220bbe36dfe291"
+    },
+    {
+      "file": "feature-14.test.ts",
+      "ids": [
+        "feature-14",
+        "round-trips a catalogue key",
+        "returns -1 for an unknown key"
+      ],
+      "assertions": 3,
+      "snapshots": 1,
+      "normalizedSha256": "e860bf519788c8022d72a044d2a79e28bc0a7e5fd6d78fc533a215f0ce89c78b"
+    },
+    {
+      "file": "feature-15.test.ts",
+      "ids": [
+        "feature-15",
+        "round-trips a catalogue key",
+        "returns -1 for an unknown key"
+      ],
+      "assertions": 3,
+      "snapshots": 1,
+      "normalizedSha256": "17b3796dcd61c69cfedf91299a691856b30f50b9ca7b3c352a32393c9e16ff01"
+    },
+    {
+      "file": "feature-16.test.ts",
+      "ids": [
+        "feature-16",
+        "round-trips a catalogue key",
+        "returns -1 for an unknown key"
+      ],
+      "assertions": 3,
+      "snapshots": 1,
+      "normalizedSha256": "6f68109c18fb2da304fc7d0d0f759d3097b7f84955ad204945006a67c242f1f9"
+    }
+  ]
+}

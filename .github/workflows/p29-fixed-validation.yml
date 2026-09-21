@@ -1,0 +1,221 @@
+name: P29 fixed validation
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  fixed-validation:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: bash
+    env:
+      TZ: UTC
+      P29_EVIDENCE: ${{ runner.temp }}/p29-ci-${{ github.run_id }}-${{ github.run_attempt }}
+      npm_config_cache: ${{ runner.temp }}/p29-npm-${{ github.run_id }}-${{ github.run_attempt }}
+      npm_config_audit: 'false'
+      npm_config_fund: 'false'
+      npm_config_fetch_retries: '0'
+    steps:
+      - name: Start isolated evidence record
+        id: start
+        run: |
+          python3 - <<'PY'
+          import datetime, json, os, pathlib, platform
+          out = pathlib.Path(os.environ['P29_EVIDENCE'])
+          out.mkdir()
+          keys = ['GITHUB_REPOSITORY', 'GITHUB_SHA', 'GITHUB_REF', 'GITHUB_EVENT_NAME',
+                  'GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT', 'GITHUB_JOB',
+                  'RUNNER_OS', 'RUNNER_ARCH', 'ImageOS', 'ImageVersion']
+          data = {key: os.environ.get(key) for key in keys}
+          data.update(startedAt=datetime.datetime.now(datetime.timezone.utc).isoformat(),
+                      evidenceKind='github-actions-fixed-synthetic-example',
+                      runnerLabel='ubuntu-24.04', kernel=platform.release(),
+                      logicalCpuCount=os.cpu_count())
+          data['cpuModels'] = sorted({line.split(':', 1)[1].strip() for line in pathlib.Path('/proc/cpuinfo').read_text().splitlines() if line.startswith('model name')})
+          data['memoryTotal'] = next((line for line in pathlib.Path('/proc/meminfo').read_text().splitlines() if line.startswith('MemTotal:')), None)
+          data['osRelease'] = pathlib.Path('/etc/os-release').read_text()
+          data['cache'] = {'actionsDependencyCache': 'disabled', 'npmCache': 'new empty directory for this run',
+                           'nodeToolCache': 'setup-node may use hosted runner toolcache; see setup step log',
+                           'viteCache': 'measure clears node_modules/.vite before each measured run',
+                           'osPageCache': 'not flushed', 'nodeCompileCache': 'disabled by measure',
+                           'dependencyInstall': 'outside the six measured intervals'}
+          data['rawHelperLabelNote'] = "Unmodified measure.mjs uses evidenceKind='real-vitest-local' for real child execution, even here. This run record and GitHub run URL establish CI provenance; raw labels are not rewritten."
+          (out / 'run-context.json').write_text(json.dumps(data, indent=2) + '\n')
+          pathlib.Path(os.environ['npm_config_cache']).mkdir()
+          assert data['GITHUB_EVENT_NAME'] == 'workflow_dispatch', 'manual event required'
+          assert data['GITHUB_REF'] == 'refs/heads/main', 'main required'
+          assert data['GITHUB_RUN_ATTEMPT'] == '1', 'reruns need separate approval'
+          PY
+
+      - name: Checkout the dispatched commit
+        id: checkout
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5; official SHA verified
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Snapshot original files and existing evidence
+        id: snapshot
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, os, pathlib, subprocess
+          out = pathlib.Path(os.environ['P29_EVIDENCE'])
+          files = subprocess.check_output(['git', 'ls-files', '-z']).decode().split('\0')
+          hashes = {p: hashlib.sha256(pathlib.Path(p).read_bytes()).hexdigest() for p in files if p}
+          (out / 'tracked-before.json').write_text(json.dumps(hashes, indent=2) + '\n')
+          protected = ['src', 'tests', 'reference', 'results', 'scripts']
+          inventory = sorted(str(p) for folder in protected for p in pathlib.Path(folder).rglob('*') if p.is_file())
+          (out / 'protected-files-before.json').write_text(json.dumps(inventory, indent=2) + '\n')
+          artifacts = pathlib.Path('artifacts')
+          directories = sorted(p.name for p in artifacts.iterdir()) if artifacts.exists() else []
+          (out / 'artifact-entries-before.json').write_text(json.dumps(directories, indent=2) + '\n')
+          assert not pathlib.Path('node_modules').exists(), 'node_modules must not be present'
+          actual = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
+          (out / 'checked-out-commit.txt').write_text(actual + '\n')
+          assert actual == os.environ['GITHUB_SHA'], 'checkout commit differs from dispatched SHA'
+          PY
+
+      - name: Set up exact Node version
+        id: node
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5; official SHA verified
+        with:
+          node-version: '24.19.0'
+          architecture: x64
+          check-latest: false
+          package-manager-cache: false
+
+      - name: Verify Node and install exact npm if needed
+        id: npm
+        run: |
+          set -euo pipefail
+          {
+            date --utc --iso-8601=seconds
+            node --version
+            test "$(node --version)" = 'v24.19.0'
+            test "$(node -p 'process.platform + "/" + process.arch')" = 'linux/x64'
+            if test "$(npm --version)" != '11.9.0'; then
+              npm install --global npm@11.9.0
+            fi
+            npm --version
+            test "$(npm --version)" = '11.9.0'
+            date --utc --iso-8601=seconds
+          } 2>&1 | tee "$P29_EVIDENCE/tool-setup.log"
+
+      - name: Restore dependencies from unchanged lockfile
+        id: dependencies
+        run: |
+          set -euo pipefail
+          { date --utc --iso-8601=seconds; npm ci; date --utc --iso-8601=seconds; } 2>&1 | tee "$P29_EVIDENCE/npm-ci.log"
+
+      - name: Record and require the fixed dependency versions
+        id: versions
+        run: |
+          node --input-type=module - <<'JS'
+          import { readFileSync, writeFileSync } from 'node:fs';
+          import { execFileSync } from 'node:child_process';
+          const expected = { node: 'v24.19.0', npm: '11.9.0', vitest: '5.0.1', '@vitest/coverage-v8': '5.0.1', vite: '8.3.0', typescript: '5.9.2' };
+          const observed = { node: process.version, npm: execFileSync('npm', ['--version'], { encoding: 'utf8' }).trim() };
+          for (const name of ['vitest', '@vitest/coverage-v8', 'vite', 'typescript']) observed[name] = JSON.parse(readFileSync(`node_modules/${name}/package.json`, 'utf8')).version;
+          const valid = Object.entries(expected).every(([key, value]) => observed[key] === value);
+          writeFileSync(`${process.env.P29_EVIDENCE}/versions.json`, JSON.stringify({ expected, observed, valid }, null, 2) + '\n');
+          console.log(JSON.stringify({ expected, observed, valid }, null, 2));
+          if (!valid) process.exitCode = 1;
+          JS
+
+      - name: Verify fixed manifest before measurement
+        id: manifest_before
+        run: |
+          set -euo pipefail
+          { date --utc --iso-8601=seconds; npm run verify:manifest; date --utc --iso-8601=seconds; } 2>&1 | tee "$P29_EVIDENCE/manifest-before.log"
+
+      - name: Measure baseline and candidate three times each
+        id: measure
+        run: |
+          set -euo pipefail
+          { date --utc --iso-8601=seconds; npm run measure; date --utc --iso-8601=seconds; } 2>&1 | tee "$P29_EVIDENCE/measure.log"
+
+      - name: Check healthy implementation, known fault, and environment error
+        id: fault
+        run: |
+          set -euo pipefail
+          { date --utc --iso-8601=seconds; npm run failure-check; date --utc --iso-8601=seconds; } 2>&1 | tee "$P29_EVIDENCE/failure-check.log"
+
+      - name: Run 24 helper regressions (includes simulated results)
+        id: helpers
+        run: |
+          set -euo pipefail
+          { date --utc --iso-8601=seconds; node --test --test-concurrency=1 scripts/check-manifest.test.mjs scripts/check-measure.test.mjs scripts/check-failure.test.mjs; date --utc --iso-8601=seconds; } 2>&1 | tee "$P29_EVIDENCE/helper-regressions.log"
+
+      - name: Verify fixed manifest after restoration
+        id: manifest_after
+        run: |
+          set -euo pipefail
+          { date --utc --iso-8601=seconds; npm run verify:manifest; date --utc --iso-8601=seconds; } 2>&1 | tee "$P29_EVIDENCE/manifest-after.log"
+
+      - name: Preserve this run's evidence and verify original bytes
+        id: preserve
+        if: ${{ always() }}
+        env:
+          P29_STEP_OUTCOMES: >-
+            {"start":"${{ steps.start.outcome }}","checkout":"${{ steps.checkout.outcome }}","snapshot":"${{ steps.snapshot.outcome }}","node":"${{ steps.node.outcome }}","npm":"${{ steps.npm.outcome }}","dependencies":"${{ steps.dependencies.outcome }}","versions":"${{ steps.versions.outcome }}","manifest_before":"${{ steps.manifest_before.outcome }}","measure":"${{ steps.measure.outcome }}","fault":"${{ steps.fault.outcome }}","helpers":"${{ steps.helpers.outcome }}","manifest_after":"${{ steps.manifest_after.outcome }}"}
+        run: |
+          python3 - <<'PY'
+          import datetime, hashlib, json, os, pathlib, shutil, subprocess
+          out = pathlib.Path(os.environ['P29_EVIDENCE'])
+          out.mkdir(exist_ok=True)
+          outcomes = json.loads(os.environ['P29_STEP_OUTCOMES'])
+          (out / 'step-outcomes.json').write_text(json.dumps(outcomes, indent=2) + '\n')
+          (out / 'collection-time.txt').write_text(datetime.datetime.now(datetime.timezone.utc).isoformat() + '\n')
+          initial = out / 'tracked-before.json'
+          integrity = {'verified': False, 'reason': 'initial snapshot unavailable', 'changed': [], 'missing': [], 'addedProtected': []}
+          if initial.exists():
+              before = json.loads(initial.read_text())
+              after = {}
+              for name in before:
+                  path = pathlib.Path(name)
+                  if path.is_file():
+                      after[name] = hashlib.sha256(path.read_bytes()).hexdigest()
+                      if before[name] != after[name]: integrity['changed'].append(name)
+                  else: integrity['missing'].append(name)
+              protected = ['src', 'tests', 'reference', 'results', 'scripts']
+              now = {str(p) for folder in protected for p in pathlib.Path(folder).rglob('*') if p.is_file()}
+              old = set(json.loads((out / 'protected-files-before.json').read_text()))
+              integrity['addedProtected'] = sorted(now - old)
+              integrity['verified'] = not any(integrity[key] for key in ['changed', 'missing', 'addedProtected'])
+              integrity['reason'] = 'all original tracked bytes and protected file inventory preserved' if integrity['verified'] else 'original content changed'
+              (out / 'tracked-after.json').write_text(json.dumps(after, indent=2) + '\n')
+          inventory = out / 'artifact-entries-before.json'
+          new_entries = []
+          if inventory.exists() and pathlib.Path('artifacts').exists():
+              old = set(json.loads(inventory.read_text()))
+              target = out / 'new-artifacts'
+              target.mkdir(exist_ok=True)
+              for source in sorted(pathlib.Path('artifacts').iterdir()):
+                  if source.name not in old:
+                      new_entries.append(source.name)
+                      if source.is_dir(): shutil.copytree(source, target / source.name)
+                      else: shutil.copy2(source, target / source.name)
+          (out / 'new-artifact-entries.json').write_text(json.dumps(new_entries, indent=2) + '\n')
+          (out / 'integrity.json').write_text(json.dumps(integrity, indent=2) + '\n')
+          print(json.dumps({'integrity': integrity, 'newArtifactEntries': new_entries}, indent=2))
+          # Cleanup records do not turn a failed validation into success.
+          if not integrity['verified']: raise SystemExit(1)
+          PY
+
+      - name: Upload available evidence even when validation failed
+        id: upload
+        if: ${{ always() }}
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0; official SHA verified
+        with:
+          name: p29-ci-${{ github.run_id }}-attempt-${{ github.run_attempt }}
+          path: ${{ env.P29_EVIDENCE }}/
+          if-no-files-found: error
+          retention-days: 30
+          overwrite: false
+          include-hidden-files: false

@@ -1,0 +1,26 @@
+{
+  "command": [
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+    "/workspace/scratch/3be8439307aa/p29-vitest-example/node_modules/vitest/vitest.mjs",
+    "run",
+    "tests/feature-01.test.ts",
+    "--config",
+    "vitest.config.ts",
+    "--no-coverage",
+    "--reporter=default",
+    "--reporter=json",
+    "--outputFile.json=/workspace/scratch/3be8439307aa/p29-vitest-example/artifacts/failure-caa614d7-c1e2-4f66-bff6-ab74994de52c/candidate/healthy/vitest.json"
+  ],
+  "startedAt": "2026-09-21T10:48:18.986Z",
+  "endedAt": "2026-09-21T10:48:19.811Z",
+  "elapsedSeconds": 0.824918316,
+  "exitCode": 0,
+  "signal": null,
+  "spawnError": null,
+  "reportError": null,
+  "classification": "healthy",
+  "expectedFailureDetected": false,
+  "reasons": [],
+  "targetTestId": "feature-01 round-trips a catalogue key",
+  "failureMessages": []
+}

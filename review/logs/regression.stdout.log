@@ -1,0 +1,32 @@
+✔ healthy and exact implementation fault are distinct (3.026283ms)
+✔ missing report and startup error do not count as fault detection (0.265182ms)
+✔ a stale valid-looking report cannot prove a fault was detected this time (0.269875ms)
+✔ wrong test ID, changed expectation, and wrong failure message are rejected (0.567815ms)
+✔ signal, mixed runtime error, extra assertion failure, and broken snapshot are rejected (1.061929ms)
+✔ exit 1 with passing assertions is not a known implementation failure (0.239205ms)
+✔ malformed reporter structures are invalid rather than fault detection (0.416009ms)
+✔ baseline: exact allowed contents pass with 32 IDs, 48 assertions, 16 snapshots (46.294898ms)
+✔ candidate: exact allowed contents pass with 32 IDs, 48 assertions, 16 snapshots (10.836343ms)
+✔ intentional expectation change is rejected and reference remains untouched (21.103509ms)
+✔ wrong direct import target is rejected (15.80563ms)
+✔ missing test file is rejected (24.436665ms)
+✔ extra nested test file is rejected (33.575114ms)
+✔ mixed baseline and candidate imports are rejected (17.191214ms)
+✔ changed baseline reference is rejected without rewriting it (18.466717ms)
+✔ CLI returns exit 0 for candidate and exit 1 for expectation change, preserving reference (204.502567ms)
+Regression evidence: /workspace/scratch/3be8439307aa/p29-vitest-example/artifacts/measure-regression-gsWq2y
+✔ normal official report, fixed test IDs and coverage are accepted (4.568658ms)
+✔ stale success JSON is rejected even with successful process exit (1.540483ms)
+✔ missing JSON, coverage, wrong test ID, bad exit or missing timing cannot pass (6.713547ms)
+✔ old bundled success files remain untouched when six fresh reports are missing (2263.255131ms)
+✔ spawn ENOENT is reasoned invalid, not a detected test failure (2196.781231ms)
+✔ configuration mismatch blocks execution before comparison (214.771758ms)
+✔ CLI exits nonzero when child exits zero but produces no new results (2401.660462ms)
+ℹ tests 23
+ℹ suites 0
+ℹ pass 23
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 7948.869604

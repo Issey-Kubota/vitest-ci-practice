@@ -1,0 +1,57 @@
+
+ RUN  v5.0.1 /workspace/scratch/3be8439307aa/p29-vitest-example
+      Coverage enabled with v8
+
+ ✓ tests/feature-01.test.ts (2 tests) 17ms
+ ✓ tests/feature-03.test.ts (2 tests) 17ms
+ ✓ tests/feature-02.test.ts (2 tests) 25ms
+ ✓ tests/feature-04.test.ts (2 tests) 25ms
+ ✓ tests/feature-05.test.ts (2 tests) 13ms
+ ✓ tests/feature-07.test.ts (2 tests) 15ms
+ ✓ tests/feature-06.test.ts (2 tests) 15ms
+ ✓ tests/feature-08.test.ts (2 tests) 48ms
+ ✓ tests/feature-09.test.ts (2 tests) 15ms
+ ✓ tests/feature-10.test.ts (2 tests) 15ms
+ ✓ tests/feature-11.test.ts (2 tests) 21ms
+ ✓ tests/feature-12.test.ts (2 tests) 46ms
+ ✓ tests/feature-13.test.ts (2 tests) 18ms
+ ✓ tests/feature-14.test.ts (2 tests) 16ms
+ ✓ tests/feature-15.test.ts (2 tests) 20ms
+ ✓ tests/feature-16.test.ts (2 tests) 13ms
+
+ Test Files  16 passed (16)
+      Tests  32 passed (32)
+   Start at  17:36:05
+   Duration  2.05s (import 48%, transform 31%, worker 12%, tests 9%)
+
+JSON report written to /workspace/scratch/3be8439307aa/p29-vitest-example/results/baseline-3.json
+ % Coverage report from v8
+---------------|---------|----------|---------|---------|-------------------
+File           | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+---------------|---------|----------|---------|---------|-------------------
+All files      |     100 |       75 |     100 |     100 |                   
+ feature-01.ts |     100 |       75 |     100 |     100 | 5                 
+ feature-02.ts |     100 |       75 |     100 |     100 | 5                 
+ feature-03.ts |     100 |       75 |     100 |     100 | 5                 
+ feature-04.ts |     100 |       75 |     100 |     100 | 5                 
+ feature-05.ts |     100 |       75 |     100 |     100 | 5                 
+ feature-06.ts |     100 |       75 |     100 |     100 | 5                 
+ feature-07.ts |     100 |       75 |     100 |     100 | 5                 
+ feature-08.ts |     100 |       75 |     100 |     100 | 5                 
+ feature-09.ts |     100 |       75 |     100 |     100 | 5                 
+ feature-10.ts |     100 |       75 |     100 |     100 | 5                 
+ feature-11.ts |     100 |       75 |     100 |     100 | 5                 
+ feature-12.ts |     100 |       75 |     100 |     100 | 5                 
+ feature-13.ts |     100 |       75 |     100 |     100 | 5                 
+ feature-14.ts |     100 |       75 |     100 |     100 | 5                 
+ feature-15.ts |     100 |       75 |     100 |     100 | 5                 
+ feature-16.ts |     100 |       75 |     100 |     100 | 5                 
+---------------|---------|----------|---------|---------|-------------------
+
+=============================== Coverage summary ===============================
+Statements   : 100% ( 96/96 )
+Branches     : 75% ( 48/64 )
+Functions    : 100% ( 64/64 )
+Lines        : 100% ( 64/64 )
+================================================================================
+__P29_WALL=2.520 __P29_CPU_USER=7.321 __P29_CPU_SYSTEM=1.382

@@ -1,0 +1,50 @@
+name: 試用・質問・課題報告
+description: 課題、公開例の実行、許可された本人環境への適用を区別して記録します。
+title: "[P29] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        社名・個人名・会社コード・設定一式・生ログ・秘密情報は投稿しないでください。
+        秘密を含まない要約だけで構いません。現在は無料の検証例です。
+        初回支援は最大2チーム、必要時の説明30分＋非同期30分を1チームの予算目安とします。
+        無期限サポートや個別改修の約束ではありません。予約・決済は受け付けません。
+  - type: dropdown
+    id: category
+    attributes:
+      label: 今回の区分
+      options:
+        - 課題報告・質問（未試用を含む）
+        - 公開例を実行した
+        - 許可された本人環境のコピーへ適用した
+    validations:
+      required: true
+  - type: textarea
+    id: report
+    attributes:
+      label: 困ったこと・試したこと・結果
+      description: どの判断で止まったか、成功／失敗／未実行、必要な試験を維持できたかを要約してください。
+    validations:
+      required: true
+  - type: textarea
+    id: conditions
+    attributes:
+      label: 公開できる条件（任意）
+      description: Node/Vitest版、OS・runner種別、coverage条件、時間など。実測と概算を区別し、生ログは貼らないでください。
+  - type: dropdown
+    id: duplicate
+    attributes:
+      label: 同じチーム・別媒体との重複
+      options:
+        - 同じ内容の回答は今回が初めて
+        - 同じチームまたは別媒体で回答済み
+        - 分からない・回答しない
+    validations:
+      required: true
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: 投稿内容の確認
+      options:
+        - label: 会社コード・個人名・秘密情報・生ログを含めていません。
+          required: true

@@ -1,0 +1,5 @@
+--- a/src/features/feature-01.ts
++++ b/src/features/feature-01.ts
+@@ -4 +4 @@
+-export function lookup01(value: string): number { return index.get(value) ?? -1 }
++export function lookup01(value: string): number { const row = index.get(value); return row === undefined ? -1 : row + 1 }

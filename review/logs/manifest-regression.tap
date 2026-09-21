@@ -1,0 +1,16 @@
+✔ baseline: exact allowed contents pass with 32 IDs, 48 assertions, 16 snapshots (52.056685ms)
+✔ candidate: exact allowed contents pass with 32 IDs, 48 assertions, 16 snapshots (16.276213ms)
+✔ intentional expectation change is rejected and reference remains untouched (19.933049ms)
+✔ wrong direct import target is rejected (15.471285ms)
+✔ missing test file is rejected (12.513033ms)
+✔ extra nested test file is rejected (14.965366ms)
+✔ mixed baseline and candidate imports are rejected (16.525133ms)
+✔ changed baseline reference is rejected without rewriting it (7.108059ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 292.64833

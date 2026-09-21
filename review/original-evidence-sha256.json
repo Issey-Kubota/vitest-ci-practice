@@ -1,0 +1,28 @@
+{
+  "archiveSha256": "d629f965fa81a959d5de08895b7f876f9468e58bdc0be962c99c60f30996b8b0",
+  "results": {
+    "results/baseline-3.stdout.txt": "e5b4cc3dfb5340a8c8f13486eb52709a90a5393c6b7f370678e880ddf8ec21fa",
+    "results/candidate-1.json": "b0e4421a62d301b5538fbb45a77f8dd89e760072df33331a5341a4b3181fcfcb",
+    "results/candidate-3.json": "caa66fd6ef01006a58d89de51d616ee3473ccc15a5eefea49bd6719d96be385d",
+    "results/measurements.json": "f5062f1fc5c21d876f5e22181d3609cfdefffd1de12837d071aa934c4d40c829",
+    "results/failure-baseline.stdout.txt": "b9b09c367c6e0bf6ccab894d3392fd92fd61603addf026be46a6d8f6c983e497",
+    "results/manual-candidate.stdout.txt": "947154eca3e3e99691859f69e5bf16b240d8e73989436cdb8a2053a125a90874",
+    "results/candidate-2.stdout.txt": "203b4f8648d5e9d9f9c27f6a21473e4c9ad0ea115b864c139ac9600fd60477fe",
+    "results/manual-baseline.stdout.txt": "432f03b097aa631c53465df21c5031883395e7a0e1ff013b2b136f2b6d25271a",
+    "results/candidate-2.json": "2ea4b35710cc394dcf4949fe4e76b278ab546a814e8fbf535def4ddfc5b85dea",
+    "results/candidate-3.stdout.txt": "6ae249be6400acedd38aed52821a5753104580f97d8e909f5f8a8962818d34d7",
+    "results/baseline-3.json": "ea8597727b9dc06c264ea10c112a2bd39a545eac3a4e682dc27a123ed2e3fba7",
+    "results/current.json": "d260427200e69ee75e818a85dd82550e281aa6eb6a571f2ee0b2e464c2703498",
+    "results/test-manifest.json": "5e2df6c8f7b09d1cab638dd32207d705245b4f260e80f80d99af45fc0bdbfd60",
+    "results/failure-candidate.stdout.txt": "6f5862c93cb4c8a548e95f143d4e30de1ea23ef94ded3cbcce11478a75cfa628",
+    "results/baseline-1.stdout.txt": "c53949e6e80ef7f36bb3935ceb4c41bf8de9a525f4423c1901eddcf0ab26c355",
+    "results/baseline-2.stdout.txt": "d8818ed7fa800de819c14178fa793a583cbed9041a8b772925a33333468de8c5",
+    "results/failure-check.json": "619ac618c458935812f0373a0af67d5d6ba72ec926f734a4e040932ce7eb40c2",
+    "results/baseline-1.json": "8163dce22f141b007a92fae40af1e0a01de194a9d0e36a58743f01a6cd0bbfab",
+    "results/candidate-1.stdout.txt": "a5ee7b0062470c8c9fd5ead0cd52c853e1d1d7320d2f8351d6ab9898e38a41d9",
+    "results/baseline-2.json": "338b6f145a6d807c44d3febc081d342ce0521e4ba08448e7cb0b1ec7f4e7bb82"
+  },
+  "allOriginalResultsByteIdentical": true,
+  "sourceTestsDependenciesConfigByteIdentical": true,
+  "protectedFileCount": 68
+}

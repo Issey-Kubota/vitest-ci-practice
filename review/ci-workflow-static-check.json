@@ -1,0 +1,24 @@
+{
+  "checkedAt": "2026-09-21T12:48:55.229586+00:00",
+  "kind": "static-only-not-ci",
+  "yamlParsed": true,
+  "shellPythonJavaScriptSyntax": [
+    "start",
+    "snapshot",
+    "npm",
+    "dependencies",
+    "versions",
+    "manifest_before",
+    "measure",
+    "fault",
+    "helpers",
+    "manifest_after",
+    "preserve"
+  ],
+  "manualTriggerOnly": true,
+  "singleJob": true,
+  "runner": "ubuntu-24.04",
+  "timeoutMinutes": 15,
+  "fullShaActions": true,
+  "realCIExecuted": false
+}

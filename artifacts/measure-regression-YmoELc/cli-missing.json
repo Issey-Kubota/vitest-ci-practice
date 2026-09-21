@@ -1,0 +1,10 @@
+{
+  "code": 1,
+  "signal": null,
+  "spawnError": null,
+  "stdout": "{\n  \"output\": \"/tmp/p29-measure-tFg08n/artifacts/measure-nACIBQ\",\n  \"complete\": false,\n  \"validCount\": 0,\n  \"invalidCount\": 6,\n  \"fatalReasons\": [],\n  \"comparison\": null\n}\n",
+  "stderr": "",
+  "startedAt": 1789987905711,
+  "endedAt": 1789987908289,
+  "wallMs": 2577.9513069999994
+}

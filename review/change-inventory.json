@@ -1,0 +1,22 @@
+{
+  "changedOriginalFiles": [
+    "README.md",
+    "docs/actual-report.md",
+    "docs/offer-and-questions.md",
+    "docs/parent-report.md",
+    "docs/test-inventory.md",
+    "scripts/failure-check.mjs",
+    "scripts/measure.mjs",
+    "scripts/verify-manifest.mjs"
+  ],
+  "addedSourceAndDocumentation": [
+    "scripts/check-failure.test.mjs",
+    "scripts/check-manifest.test.mjs",
+    "scripts/check-measure.test.mjs",
+    "reference/LINEAGE.md",
+    "reference/baseline-tests.json",
+    "reference/measurement-conditions.json",
+    "docs/revision-report.md"
+  ],
+  "note": "New evidence under artifacts/ and review/ is listed in archive, omitted from textual patch."
+}

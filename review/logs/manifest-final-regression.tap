@@ -1,0 +1,64 @@
+TAP version 13
+# Subtest: baseline: exact allowed contents pass with 32 IDs, 48 assertions, 16 snapshots
+ok 1 - baseline: exact allowed contents pass with 32 IDs, 48 assertions, 16 snapshots
+  ---
+  duration_ms: 46.06265
+  type: 'test'
+  ...
+# Subtest: candidate: exact allowed contents pass with 32 IDs, 48 assertions, 16 snapshots
+ok 2 - candidate: exact allowed contents pass with 32 IDs, 48 assertions, 16 snapshots
+  ---
+  duration_ms: 10.823047
+  type: 'test'
+  ...
+# Subtest: intentional expectation change is rejected and reference remains untouched
+ok 3 - intentional expectation change is rejected and reference remains untouched
+  ---
+  duration_ms: 15.582737
+  type: 'test'
+  ...
+# Subtest: wrong direct import target is rejected
+ok 4 - wrong direct import target is rejected
+  ---
+  duration_ms: 23.986728
+  type: 'test'
+  ...
+# Subtest: missing test file is rejected
+ok 5 - missing test file is rejected
+  ---
+  duration_ms: 10.703877
+  type: 'test'
+  ...
+# Subtest: extra nested test file is rejected
+ok 6 - extra nested test file is rejected
+  ---
+  duration_ms: 21.066189
+  type: 'test'
+  ...
+# Subtest: mixed baseline and candidate imports are rejected
+ok 7 - mixed baseline and candidate imports are rejected
+  ---
+  duration_ms: 23.652045
+  type: 'test'
+  ...
+# Subtest: changed baseline reference is rejected without rewriting it
+ok 8 - changed baseline reference is rejected without rewriting it
+  ---
+  duration_ms: 7.541309
+  type: 'test'
+  ...
+# Subtest: CLI returns exit 0 for candidate and exit 1 for expectation change, preserving reference
+ok 9 - CLI returns exit 0 for candidate and exit 1 for expectation change, preserving reference
+  ---
+  duration_ms: 189.332933
+  type: 'test'
+  ...
+1..9
+# tests 9
+# suites 0
+# pass 9
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 472.104742

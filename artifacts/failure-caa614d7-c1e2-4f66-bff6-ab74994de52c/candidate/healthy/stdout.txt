@@ -1,0 +1,11 @@
+
+ RUN  v5.0.1 /workspace/scratch/3be8439307aa/p29-vitest-example
+
+ ✓ tests/feature-01.test.ts (2 tests) 13ms
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  19:48:19
+   Duration  240ms (transform 50%, import 25%, tests 18%, worker 7%)
+
+JSON report written to /workspace/scratch/3be8439307aa/p29-vitest-example/artifacts/failure-caa614d7-c1e2-4f66-bff6-ab74994de52c/candidate/healthy/vitest.json

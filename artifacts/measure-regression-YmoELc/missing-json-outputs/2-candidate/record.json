@@ -1,0 +1,574 @@
+{
+  "sequence": 2,
+  "variant": "candidate",
+  "attempt": 1,
+  "valid": false,
+  "reasons": [
+    "test_json_unavailable: ENOENT",
+    "coverage_unavailable: ENOENT",
+    "missing_test_json",
+    "missing_coverage_summary"
+  ],
+  "wallMs": 2,
+  "exitCode": 0,
+  "jsonPresent": false,
+  "directory": "artifacts/measure-4CBohF/2-candidate",
+  "before": {
+    "valid": true,
+    "reasons": [],
+    "observed": {
+      "node": "v24.19.0",
+      "platform": "linux",
+      "arch": "x64",
+      "packages": {
+        "vitest": "5.0.1",
+        "vite": "8.3.0",
+        "typescript": "5.9.2",
+        "@vitest/coverage-v8": "5.0.1"
+      },
+      "npm": "11.9.0"
+    },
+    "manifest": {
+      "valid": true,
+      "reasons": [],
+      "variant": "candidate",
+      "files": [
+        {
+          "file": "tests/feature-01.test.ts",
+          "variant": "candidate",
+          "sha256": "f5b39625301483aa3fd294d39ebbc593e97baf0e9ca160599da0bf4536125b1d",
+          "baselineSha256": "cf1f8185d4420a6a85b09442feae1c06345bc08ef92de6ee304042d9db95bfec",
+          "candidateSha256": "f5b39625301483aa3fd294d39ebbc593e97baf0e9ca160599da0bf4536125b1d",
+          "testIds": [
+            "tests/feature-01.test.ts::feature-01::round-trips a catalogue key",
+            "tests/feature-01.test.ts::feature-01::returns -1 for an unknown key"
+          ],
+          "assertions": 3,
+          "snapshots": 1
+        },
+        {
+          "file": "tests/feature-02.test.ts",
+          "variant": "candidate",
+          "sha256": "00a880e4158273ebabb0f9beca3af03a976fa7fcb42593e32722ea364400d384",
+          "baselineSha256": "3ee16e1ff5c38083bdc9744b906fdd1fb9fa00de61e7ed3d0c4f50a9be61fa27",
+          "candidateSha256": "00a880e4158273ebabb0f9beca3af03a976fa7fcb42593e32722ea364400d384",
+          "testIds": [
+            "tests/feature-02.test.ts::feature-02::round-trips a catalogue key",
+            "tests/feature-02.test.ts::feature-02::returns -1 for an unknown key"
+          ],
+          "assertions": 3,
+          "snapshots": 1
+        },
+        {
+          "file": "tests/feature-03.test.ts",
+          "variant": "candidate",
+          "sha256": "2933381b8a846efebb9b14a6387243a7ef1d724b765b344b12d888a0e19ff767",
+          "baselineSha256": "d5d9f987f2f97adf23fdd85fdbb3e9aef16716bf0ef5bd579a75ddb5badc8bf3",
+          "candidateSha256": "2933381b8a846efebb9b14a6387243a7ef1d724b765b344b12d888a0e19ff767",
+          "testIds": [
+            "tests/feature-03.test.ts::feature-03::round-trips a catalogue key",
+            "tests/feature-03.test.ts::feature-03::returns -1 for an unknown key"
+          ],
+          "assertions": 3,
+          "snapshots": 1
+        },
+        {
+          "file": "tests/feature-04.test.ts",
+          "variant": "candidate",
+          "sha256": "af844889e4e6fdfff03edc8e6c09d336e86fd9009f3070c1bb8596b5b2133fa9",
+          "baselineSha256": "23b246a1d0f52514cbfcb4806f506de8ccade91cdb7203a55940edab321ab606",
+          "candidateSha256": "af844889e4e6fdfff03edc8e6c09d336e86fd9009f3070c1bb8596b5b2133fa9",
+          "testIds": [
+            "tests/feature-04.test.ts::feature-04::round-trips a catalogue key",
+            "tests/feature-04.test.ts::feature-04::returns -1 for an unknown key"
+          ],
+          "assertions": 3,
+          "snapshots": 1
+        },
+        {
+          "file": "tests/feature-05.test.ts",
+          "variant": "candidate",
+          "sha256": "eec6fe86867838d837630c8bbac75f7478883fabed9e986683221d40b5cef13f",
+          "baselineSha256": "d75463a6eb88a1bc80770cc799a423d37cf83473c3c77697704e12ddf4418670",
+          "candidateSha256": "eec6fe86867838d837630c8bbac75f7478883fabed9e986683221d40b5cef13f",
+          "testIds": [
+            "tests/feature-05.test.ts::feature-05::round-trips a catalogue key",
+            "tests/feature-05.test.ts::feature-05::returns -1 for an unknown key"
+          ],
+          "assertions": 3,
+          "snapshots": 1
+        },
+        {
+          "file": "tests/feature-06.test.ts",
+          "variant": "candidate",
+          "sha256": "ffc3390e9c4a3a7d3ab5bd5f53f692db190ec8992ade417218297b13ea777680",
+          "baselineSha256": "0ce1c2718bd16a12286cfe2663582e9c5d8b613457bc64a390bff9fefe28c890",
+          "candidateSha256": "ffc3390e9c4a3a7d3ab5bd5f53f692db190ec8992ade417218297b13ea777680",
+          "testIds": [
+            "tests/feature-06.test.ts::feature-06::round-trips a catalogue key",
+            "tests/feature-06.test.ts::feature-06::returns -1 for an unknown key"
+          ],
+          "assertions": 3,
+          "snapshots": 1
+        },
+        {
+          "file": "tests/feature-07.test.ts",
+          "variant": "candidate",
+          "sha256": "31e5b5e4af4254fb9e9f2729cc6f776836fd0432d8a84246dabc56d70d196b71",
+          "baselineSha256": "1112eb505bfaf8a57370d6b0d377dc20fe71d8cb0bc011b032f14843fbaab5c3",
+          "candidateSha256": "31e5b5e4af4254fb9e9f2729cc6f776836fd0432d8a84246dabc56d70d196b71",
+          "testIds": [
+            "tests/feature-07.test.ts::feature-07::round-trips a catalogue key",
+            "tests/feature-07.test.ts::feature-07::returns -1 for an unknown key"
+          ],
+          "assertions": 3,
+          "snapshots": 1
+        },
+        {
+          "file": "tests/feature-08.test.ts",
+          "variant": "candidate",
+          "sha256": "bda497b83f631af4bbbb4457782e937edf32cc80cccd1091a732cc0a672017ad",
+          "baselineSha256": "afdb1018ad0503d20c2c406e008ce56395004a49b906504c46d03d3bab4b1a44",
+          "candidateSha256": "bda497b83f631af4bbbb4457782e937edf32cc80cccd1091a732cc0a672017ad",
+          "testIds": [
+            "tests/feature-08.test.ts::feature-08::round-trips a catalogue key",
+            "tests/feature-08.test.ts::feature-08::returns -1 for an unknown key"
+          ],
+          "assertions": 3,
+          "snapshots": 1
+        },
+        {
+          "file": "tests/feature-09.test.ts",
+          "variant": "candidate",
+          "sha256": "8ea0e8933c813c9aae61a0474dc8543eccba859b66b5fa30fb3396eccea98a85",
+          "baselineSha256": "ecf88d3d6e92e0b4480387351afb20c2ab96c100958f9c93fa789334d4f7636c",
+          "candidateSha256": "8ea0e8933c813c9aae61a0474dc8543eccba859b66b5fa30fb3396eccea98a85",
+          "testIds": [
+            "tests/feature-09.test.ts::feature-09::round-trips a catalogue key",
+            "tests/feature-09.test.ts::feature-09::returns -1 for an unknown key"
+          ],
+          "assertions": 3,
+          "snapshots": 1
+        },
+        {
+          "file": "tests/feature-10.test.ts",
+          "variant": "candidate",
+          "sha256": "d366b0a35896e7ba2d1c6f397ae0f5d51ee8170d1da42de4736838eef1a8f72b",
+          "baselineSha256": "5e88985731a0f2bb213a1b55c9784a08ee5623fb9e8b0220eeff3f5eced56539",
+          "candidateSha256": "d366b0a35896e7ba2d1c6f397ae0f5d51ee8170d1da42de4736838eef1a8f72b",
+          "testIds": [
+            "tests/feature-10.test.ts::feature-10::round-trips a catalogue key",
+            "tests/feature-10.test.ts::feature-10::returns -1 for an unknown key"
+          ],
+          "assertions": 3,
+          "snapshots": 1
+        },
+        {
+          "file": "tests/feature-11.test.ts",
+          "variant": "candidate",
+          "sha256": "7da0cb67cec831ceab37df5c2f1f338693c97f7a7adc9df9211aecde4847e8ac",
+          "baselineSha256": "8f20e69ef914c0315e8a491930bed0e404a81d44e0bd193db747f695f404ca9e",
+          "candidateSha256": "7da0cb67cec831ceab37df5c2f1f338693c97f7a7adc9df9211aecde4847e8ac",
+          "testIds": [
+            "tests/feature-11.test.ts::feature-11::round-trips a catalogue key",
+            "tests/feature-11.test.ts::feature-11::returns -1 for an unknown key"
+          ],
+          "assertions": 3,
+          "snapshots": 1
+        },
+        {
+          "file": "tests/feature-12.test.ts",
+          "variant": "candidate",
+          "sha256": "2c45edc6d222257b3890e303fa51c4b31b254ce268b75ce6ae3d5d24242052f6",
+          "baselineSha256": "dcf039a1bf823e17a99e3b06dc158e2bcefc2288de0121d2a35c6bda60c25b2e",
+          "candidateSha256": "2c45edc6d222257b3890e303fa51c4b31b254ce268b75ce6ae3d5d24242052f6",
+          "testIds": [
+            "tests/feature-12.test.ts::feature-12::round-trips a catalogue key",
+            "tests/feature-12.test.ts::feature-12::returns -1 for an unknown key"
+          ],
+          "assertions": 3,
+          "snapshots": 1
+        },
+        {
+          "file": "tests/feature-13.test.ts",
+          "variant": "candidate",
+          "sha256": "4e6781982fcac643dbb28177c1b1749a29eebabf4021a16c707d0a864d527a13",
+          "baselineSha256": "1c776269e0f6b4decb3ca62704e1357d73d64e9e7e125f7ef39e3769729e4690",
+          "candidateSha256": "4e6781982fcac643dbb28177c1b1749a29eebabf4021a16c707d0a864d527a13",
+          "testIds": [
+            "tests/feature-13.test.ts::feature-13::round-trips a catalogue key",
+            "tests/feature-13.test.ts::feature-13::returns -1 for an unknown key"
+          ],
+          "assertions": 3,
+          "snapshots": 1
+        },
+        {
+          "file": "tests/feature-14.test.ts",
+          "variant": "candidate",
+          "sha256": "d23ac5edc16c0190dd3a392d5d6256d17f1aaf09c49a0d047b0e160d5dc5c1a2",
+          "baselineSha256": "6efd64478e775b73bc3ad780aa582edd97485b9f33105a24c49451852e8d2e9b",
+          "candidateSha256": "d23ac5edc16c0190dd3a392d5d6256d17f1aaf09c49a0d047b0e160d5dc5c1a2",
+          "testIds": [
+            "tests/feature-14.test.ts::feature-14::round-trips a catalogue key",
+            "tests/feature-14.test.ts::feature-14::returns -1 for an unknown key"
+          ],
+          "assertions": 3,
+          "snapshots": 1
+        },
+        {
+          "file": "tests/feature-15.test.ts",
+          "variant": "candidate",
+          "sha256": "f0daacf1d21b95953ceb1cbed7645918036b2f0c26a9909845c733390d8f8404",
+          "baselineSha256": "c96995a08784e3d3af20b251729d3140d449238ca546dda62bca237fe3460192",
+          "candidateSha256": "f0daacf1d21b95953ceb1cbed7645918036b2f0c26a9909845c733390d8f8404",
+          "testIds": [
+            "tests/feature-15.test.ts::feature-15::round-trips a catalogue key",
+            "tests/feature-15.test.ts::feature-15::returns -1 for an unknown key"
+          ],
+          "assertions": 3,
+          "snapshots": 1
+        },
+        {
+          "file": "tests/feature-16.test.ts",
+          "variant": "candidate",
+          "sha256": "02571f0523916b6bedc0d892beb5f73a11453d27340bfd1097cce9cd1404f544",
+          "baselineSha256": "4bec77e0db101007f52fc95a12f3d345ad6447ad40d2c7c481267c21c99ffc17",
+          "candidateSha256": "02571f0523916b6bedc0d892beb5f73a11453d27340bfd1097cce9cd1404f544",
+          "testIds": [
+            "tests/feature-16.test.ts::feature-16::round-trips a catalogue key",
+            "tests/feature-16.test.ts::feature-16::returns -1 for an unknown key"
+          ],
+          "assertions": 3,
+          "snapshots": 1
+        }
+      ],
+      "testIds": [
+        "tests/feature-01.test.ts::feature-01::round-trips a catalogue key",
+        "tests/feature-01.test.ts::feature-01::returns -1 for an unknown key",
+        "tests/feature-02.test.ts::feature-02::round-trips a catalogue key",
+        "tests/feature-02.test.ts::feature-02::returns -1 for an unknown key",
+        "tests/feature-03.test.ts::feature-03::round-trips a catalogue key",
+        "tests/feature-03.test.ts::feature-03::returns -1 for an unknown key",
+        "tests/feature-04.test.ts::feature-04::round-trips a catalogue key",
+        "tests/feature-04.test.ts::feature-04::returns -1 for an unknown key",
+        "tests/feature-05.test.ts::feature-05::round-trips a catalogue key",
+        "tests/feature-05.test.ts::feature-05::returns -1 for an unknown key",
+        "tests/feature-06.test.ts::feature-06::round-trips a catalogue key",
+        "tests/feature-06.test.ts::feature-06::returns -1 for an unknown key",
+        "tests/feature-07.test.ts::feature-07::round-trips a catalogue key",
+        "tests/feature-07.test.ts::feature-07::returns -1 for an unknown key",
+        "tests/feature-08.test.ts::feature-08::round-trips a catalogue key",
+        "tests/feature-08.test.ts::feature-08::returns -1 for an unknown key",
+        "tests/feature-09.test.ts::feature-09::round-trips a catalogue key",
+        "tests/feature-09.test.ts::feature-09::returns -1 for an unknown key",
+        "tests/feature-10.test.ts::feature-10::round-trips a catalogue key",
+        "tests/feature-10.test.ts::feature-10::returns -1 for an unknown key",
+        "tests/feature-11.test.ts::feature-11::round-trips a catalogue key",
+        "tests/feature-11.test.ts::feature-11::returns -1 for an unknown key",
+        "tests/feature-12.test.ts::feature-12::round-trips a catalogue key",
+        "tests/feature-12.test.ts::feature-12::returns -1 for an unknown key",
+        "tests/feature-13.test.ts::feature-13::round-trips a catalogue key",
+        "tests/feature-13.test.ts::feature-13::returns -1 for an unknown key",
+        "tests/feature-14.test.ts::feature-14::round-trips a catalogue key",
+        "tests/feature-14.test.ts::feature-14::returns -1 for an unknown key",
+        "tests/feature-15.test.ts::feature-15::round-trips a catalogue key",
+        "tests/feature-15.test.ts::feature-15::returns -1 for an unknown key",
+        "tests/feature-16.test.ts::feature-16::round-trips a catalogue key",
+        "tests/feature-16.test.ts::feature-16::returns -1 for an unknown key"
+      ],
+      "assertions": 48,
+      "snapshots": 16,
+      "referenceSha256": "63dc0df35db8f7fbffcc925b6d274dc564a6a8fbe26759607ac6be05c11f841e"
+    }
+  },
+  "command": [
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+    "node_modules/vitest/vitest.mjs",
+    "run",
+    "--config",
+    "vitest.config.ts",
+    "--coverage",
+    "--coverage.reportsDirectory=/tmp/p29-measure-2rmCBZ/artifacts/measure-4CBohF/2-candidate/coverage",
+    "--reporter=default",
+    "--reporter=json",
+    "--outputFile.json=/tmp/p29-measure-2rmCBZ/artifacts/measure-4CBohF/2-candidate/vitest.json"
+  ],
+  "process": {
+    "startedAt": 1789987898286,
+    "endedAt": 1789987898286,
+    "signal": null,
+    "spawnError": null
+  },
+  "after": {
+    "valid": true,
+    "reasons": [],
+    "observed": {
+      "node": "v24.19.0",
+      "platform": "linux",
+      "arch": "x64",
+      "packages": {
+        "vitest": "5.0.1",
+        "vite": "8.3.0",
+        "typescript": "5.9.2",
+        "@vitest/coverage-v8": "5.0.1"
+      },
+      "npm": "11.9.0"
+    },
+    "manifest": {
+      "valid": true,
+      "reasons": [],
+      "variant": "candidate",
+      "files": [
+        {
+          "file": "tests/feature-01.test.ts",
+          "variant": "candidate",
+          "sha256": "f5b39625301483aa3fd294d39ebbc593e97baf0e9ca160599da0bf4536125b1d",
+          "baselineSha256": "cf1f8185d4420a6a85b09442feae1c06345bc08ef92de6ee304042d9db95bfec",
+          "candidateSha256": "f5b39625301483aa3fd294d39ebbc593e97baf0e9ca160599da0bf4536125b1d",
+          "testIds": [
+            "tests/feature-01.test.ts::feature-01::round-trips a catalogue key",
+            "tests/feature-01.test.ts::feature-01::returns -1 for an unknown key"
+          ],
+          "assertions": 3,
+          "snapshots": 1
+        },
+        {
+          "file": "tests/feature-02.test.ts",
+          "variant": "candidate",
+          "sha256": "00a880e4158273ebabb0f9beca3af03a976fa7fcb42593e32722ea364400d384",
+          "baselineSha256": "3ee16e1ff5c38083bdc9744b906fdd1fb9fa00de61e7ed3d0c4f50a9be61fa27",
+          "candidateSha256": "00a880e4158273ebabb0f9beca3af03a976fa7fcb42593e32722ea364400d384",
+          "testIds": [
+            "tests/feature-02.test.ts::feature-02::round-trips a catalogue key",
+            "tests/feature-02.test.ts::feature-02::returns -1 for an unknown key"
+          ],
+          "assertions": 3,
+          "snapshots": 1
+        },
+        {
+          "file": "tests/feature-03.test.ts",
+          "variant": "candidate",
+          "sha256": "2933381b8a846efebb9b14a6387243a7ef1d724b765b344b12d888a0e19ff767",
+          "baselineSha256": "d5d9f987f2f97adf23fdd85fdbb3e9aef16716bf0ef5bd579a75ddb5badc8bf3",
+          "candidateSha256": "2933381b8a846efebb9b14a6387243a7ef1d724b765b344b12d888a0e19ff767",
+          "testIds": [
+            "tests/feature-03.test.ts::feature-03::round-trips a catalogue key",
+            "tests/feature-03.test.ts::feature-03::returns -1 for an unknown key"
+          ],
+          "assertions": 3,
+          "snapshots": 1
+        },
+        {
+          "file": "tests/feature-04.test.ts",
+          "variant": "candidate",
+          "sha256": "af844889e4e6fdfff03edc8e6c09d336e86fd9009f3070c1bb8596b5b2133fa9",
+          "baselineSha256": "23b246a1d0f52514cbfcb4806f506de8ccade91cdb7203a55940edab321ab606",
+          "candidateSha256": "af844889e4e6fdfff03edc8e6c09d336e86fd9009f3070c1bb8596b5b2133fa9",
+          "testIds": [
+            "tests/feature-04.test.ts::feature-04::round-trips a catalogue key",
+            "tests/feature-04.test.ts::feature-04::returns -1 for an unknown key"
+          ],
+          "assertions": 3,
+          "snapshots": 1
+        },
+        {
+          "file": "tests/feature-05.test.ts",
+          "variant": "candidate",
+          "sha256": "eec6fe86867838d837630c8bbac75f7478883fabed9e986683221d40b5cef13f",
+          "baselineSha256": "d75463a6eb88a1bc80770cc799a423d37cf83473c3c77697704e12ddf4418670",
+          "candidateSha256": "eec6fe86867838d837630c8bbac75f7478883fabed9e986683221d40b5cef13f",
+          "testIds": [
+            "tests/feature-05.test.ts::feature-05::round-trips a catalogue key",
+            "tests/feature-05.test.ts::feature-05::returns -1 for an unknown key"
+          ],
+          "assertions": 3,
+          "snapshots": 1
+        },
+        {
+          "file": "tests/feature-06.test.ts",
+          "variant": "candidate",
+          "sha256": "ffc3390e9c4a3a7d3ab5bd5f53f692db190ec8992ade417218297b13ea777680",
+          "baselineSha256": "0ce1c2718bd16a12286cfe2663582e9c5d8b613457bc64a390bff9fefe28c890",
+          "candidateSha256": "ffc3390e9c4a3a7d3ab5bd5f53f692db190ec8992ade417218297b13ea777680",
+          "testIds": [
+            "tests/feature-06.test.ts::feature-06::round-trips a catalogue key",
+            "tests/feature-06.test.ts::feature-06::returns -1 for an unknown key"
+          ],
+          "assertions": 3,
+          "snapshots": 1
+        },
+        {
+          "file": "tests/feature-07.test.ts",
+          "variant": "candidate",
+          "sha256": "31e5b5e4af4254fb9e9f2729cc6f776836fd0432d8a84246dabc56d70d196b71",
+          "baselineSha256": "1112eb505bfaf8a57370d6b0d377dc20fe71d8cb0bc011b032f14843fbaab5c3",
+          "candidateSha256": "31e5b5e4af4254fb9e9f2729cc6f776836fd0432d8a84246dabc56d70d196b71",
+          "testIds": [
+            "tests/feature-07.test.ts::feature-07::round-trips a catalogue key",
+            "tests/feature-07.test.ts::feature-07::returns -1 for an unknown key"
+          ],
+          "assertions": 3,
+          "snapshots": 1
+        },
+        {
+          "file": "tests/feature-08.test.ts",
+          "variant": "candidate",
+          "sha256": "bda497b83f631af4bbbb4457782e937edf32cc80cccd1091a732cc0a672017ad",
+          "baselineSha256": "afdb1018ad0503d20c2c406e008ce56395004a49b906504c46d03d3bab4b1a44",
+          "candidateSha256": "bda497b83f631af4bbbb4457782e937edf32cc80cccd1091a732cc0a672017ad",
+          "testIds": [
+            "tests/feature-08.test.ts::feature-08::round-trips a catalogue key",
+            "tests/feature-08.test.ts::feature-08::returns -1 for an unknown key"
+          ],
+          "assertions": 3,
+          "snapshots": 1
+        },
+        {
+          "file": "tests/feature-09.test.ts",
+          "variant": "candidate",
+          "sha256": "8ea0e8933c813c9aae61a0474dc8543eccba859b66b5fa30fb3396eccea98a85",
+          "baselineSha256": "ecf88d3d6e92e0b4480387351afb20c2ab96c100958f9c93fa789334d4f7636c",
+          "candidateSha256": "8ea0e8933c813c9aae61a0474dc8543eccba859b66b5fa30fb3396eccea98a85",
+          "testIds": [
+            "tests/feature-09.test.ts::feature-09::round-trips a catalogue key",
+            "tests/feature-09.test.ts::feature-09::returns -1 for an unknown key"
+          ],
+          "assertions": 3,
+          "snapshots": 1
+        },
+        {
+          "file": "tests/feature-10.test.ts",
+          "variant": "candidate",
+          "sha256": "d366b0a35896e7ba2d1c6f397ae0f5d51ee8170d1da42de4736838eef1a8f72b",
+          "baselineSha256": "5e88985731a0f2bb213a1b55c9784a08ee5623fb9e8b0220eeff3f5eced56539",
+          "candidateSha256": "d366b0a35896e7ba2d1c6f397ae0f5d51ee8170d1da42de4736838eef1a8f72b",
+          "testIds": [
+            "tests/feature-10.test.ts::feature-10::round-trips a catalogue key",
+            "tests/feature-10.test.ts::feature-10::returns -1 for an unknown key"
+          ],
+          "assertions": 3,
+          "snapshots": 1
+        },
+        {
+          "file": "tests/feature-11.test.ts",
+          "variant": "candidate",
+          "sha256": "7da0cb67cec831ceab37df5c2f1f338693c97f7a7adc9df9211aecde4847e8ac",
+          "baselineSha256": "8f20e69ef914c0315e8a491930bed0e404a81d44e0bd193db747f695f404ca9e",
+          "candidateSha256": "7da0cb67cec831ceab37df5c2f1f338693c97f7a7adc9df9211aecde4847e8ac",
+          "testIds": [
+            "tests/feature-11.test.ts::feature-11::round-trips a catalogue key",
+            "tests/feature-11.test.ts::feature-11::returns -1 for an unknown key"
+          ],
+          "assertions": 3,
+          "snapshots": 1
+        },
+        {
+          "file": "tests/feature-12.test.ts",
+          "variant": "candidate",
+          "sha256": "2c45edc6d222257b3890e303fa51c4b31b254ce268b75ce6ae3d5d24242052f6",
+          "baselineSha256": "dcf039a1bf823e17a99e3b06dc158e2bcefc2288de0121d2a35c6bda60c25b2e",
+          "candidateSha256": "2c45edc6d222257b3890e303fa51c4b31b254ce268b75ce6ae3d5d24242052f6",
+          "testIds": [
+            "tests/feature-12.test.ts::feature-12::round-trips a catalogue key",
+            "tests/feature-12.test.ts::feature-12::returns -1 for an unknown key"
+          ],
+          "assertions": 3,
+          "snapshots": 1
+        },
+        {
+          "file": "tests/feature-13.test.ts",
+          "variant": "candidate",
+          "sha256": "4e6781982fcac643dbb28177c1b1749a29eebabf4021a16c707d0a864d527a13",
+          "baselineSha256": "1c776269e0f6b4decb3ca62704e1357d73d64e9e7e125f7ef39e3769729e4690",
+          "candidateSha256": "4e6781982fcac643dbb28177c1b1749a29eebabf4021a16c707d0a864d527a13",
+          "testIds": [
+            "tests/feature-13.test.ts::feature-13::round-trips a catalogue key",
+            "tests/feature-13.test.ts::feature-13::returns -1 for an unknown key"
+          ],
+          "assertions": 3,
+          "snapshots": 1
+        },
+        {
+          "file": "tests/feature-14.test.ts",
+          "variant": "candidate",
+          "sha256": "d23ac5edc16c0190dd3a392d5d6256d17f1aaf09c49a0d047b0e160d5dc5c1a2",
+          "baselineSha256": "6efd64478e775b73bc3ad780aa582edd97485b9f33105a24c49451852e8d2e9b",
+          "candidateSha256": "d23ac5edc16c0190dd3a392d5d6256d17f1aaf09c49a0d047b0e160d5dc5c1a2",
+          "testIds": [
+            "tests/feature-14.test.ts::feature-14::round-trips a catalogue key",
+            "tests/feature-14.test.ts::feature-14::returns -1 for an unknown key"
+          ],
+          "assertions": 3,
+          "snapshots": 1
+        },
+        {
+          "file": "tests/feature-15.test.ts",
+          "variant": "candidate",
+          "sha256": "f0daacf1d21b95953ceb1cbed7645918036b2f0c26a9909845c733390d8f8404",
+          "baselineSha256": "c96995a08784e3d3af20b251729d3140d449238ca546dda62bca237fe3460192",
+          "candidateSha256": "f0daacf1d21b95953ceb1cbed7645918036b2f0c26a9909845c733390d8f8404",
+          "testIds": [
+            "tests/feature-15.test.ts::feature-15::round-trips a catalogue key",
+            "tests/feature-15.test.ts::feature-15::returns -1 for an unknown key"
+          ],
+          "assertions": 3,
+          "snapshots": 1
+        },
+        {
+          "file": "tests/feature-16.test.ts",
+          "variant": "candidate",
+          "sha256": "02571f0523916b6bedc0d892beb5f73a11453d27340bfd1097cce9cd1404f544",
+          "baselineSha256": "4bec77e0db101007f52fc95a12f3d345ad6447ad40d2c7c481267c21c99ffc17",
+          "candidateSha256": "02571f0523916b6bedc0d892beb5f73a11453d27340bfd1097cce9cd1404f544",
+          "testIds": [
+            "tests/feature-16.test.ts::feature-16::round-trips a catalogue key",
+            "tests/feature-16.test.ts::feature-16::returns -1 for an unknown key"
+          ],
+          "assertions": 3,
+          "snapshots": 1
+        }
+      ],
+      "testIds": [
+        "tests/feature-01.test.ts::feature-01::round-trips a catalogue key",
+        "tests/feature-01.test.ts::feature-01::returns -1 for an unknown key",
+        "tests/feature-02.test.ts::feature-02::round-trips a catalogue key",
+        "tests/feature-02.test.ts::feature-02::returns -1 for an unknown key",
+        "tests/feature-03.test.ts::feature-03::round-trips a catalogue key",
+        "tests/feature-03.test.ts::feature-03::returns -1 for an unknown key",
+        "tests/feature-04.test.ts::feature-04::round-trips a catalogue key",
+        "tests/feature-04.test.ts::feature-04::returns -1 for an unknown key",
+        "tests/feature-05.test.ts::feature-05::round-trips a catalogue key",
+        "tests/feature-05.test.ts::feature-05::returns -1 for an unknown key",
+        "tests/feature-06.test.ts::feature-06::round-trips a catalogue key",
+        "tests/feature-06.test.ts::feature-06::returns -1 for an unknown key",
+        "tests/feature-07.test.ts::feature-07::round-trips a catalogue key",
+        "tests/feature-07.test.ts::feature-07::returns -1 for an unknown key",
+        "tests/feature-08.test.ts::feature-08::round-trips a catalogue key",
+        "tests/feature-08.test.ts::feature-08::returns -1 for an unknown key",
+        "tests/feature-09.test.ts::feature-09::round-trips a catalogue key",
+        "tests/feature-09.test.ts::feature-09::returns -1 for an unknown key",
+        "tests/feature-10.test.ts::feature-10::round-trips a catalogue key",
+        "tests/feature-10.test.ts::feature-10::returns -1 for an unknown key",
+        "tests/feature-11.test.ts::feature-11::round-trips a catalogue key",
+        "tests/feature-11.test.ts::feature-11::returns -1 for an unknown key",
+        "tests/feature-12.test.ts::feature-12::round-trips a catalogue key",
+        "tests/feature-12.test.ts::feature-12::returns -1 for an unknown key",
+        "tests/feature-13.test.ts::feature-13::round-trips a catalogue key",
+        "tests/feature-13.test.ts::feature-13::returns -1 for an unknown key",
+        "tests/feature-14.test.ts::feature-14::round-trips a catalogue key",
+        "tests/feature-14.test.ts::feature-14::returns -1 for an unknown key",
+        "tests/feature-15.test.ts::feature-15::round-trips a catalogue key",
+        "tests/feature-15.test.ts::feature-15::returns -1 for an unknown key",
+        "tests/feature-16.test.ts::feature-16::round-trips a catalogue key",
+        "tests/feature-16.test.ts::feature-16::returns -1 for an unknown key"
+      ],
+      "assertions": 48,
+      "snapshots": 16,
+      "referenceSha256": "63dc0df35db8f7fbffcc925b6d274dc564a6a8fbe26759607ac6be05c11f841e"
+    }
+  },
+  "totalRunnerCpuMs": 1500,
+  "vitestDurationLine": "2.0s (import 50%)",
+  "testCounts": null,
+  "coverageTotals": null
+}
