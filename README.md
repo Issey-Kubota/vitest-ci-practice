@@ -1,80 +1,144 @@
-# Vitest CI practice — P29
+# Vitest CI Practice
 
-TypeScript/Vitestの合成プロジェクトで、**計測 → 変更1つ → 同条件の再計測 → 必要な試験の維持確認**を体験する無料の実行例です。利用者のコードを自動診断・自動修正するツールではありません。
+Vitestのテストを減らさずに、import方法の変更による実行時間の違いを比較するサンプルプロジェクトです。TypeScriptで書かれた小さなサンプルを使い、**計測 → 変更 → 同じ条件で再計測 → テスト内容の維持確認**を実践できます。
 
-公開先は[Issey-Kubota/vitest-ci-practice](https://github.com/Issey-Kubota/vitest-ci-practice)です。2026-09-21に設定エラーを修正し、GitHub Actionsで手動1回の確認に成功しました。全6回が有効で、経過時間中央値は2.226秒→1.517秒でした。各回・維持確認・最初の失敗も[CI確認記録](docs/ci-result.md)へ記録しています。
+テストの高速化を試したい方や、CIでの計測・比較手順を学びたい方を対象としています。リポジトリをcloneして実行する学習・検証用のサンプルで、任意のプロジェクトを自動診断・修正する機能はありません。
 
-## 固定構成
+## できること
 
-|項目|条件|
-|---|---|
-|Node / npm|24.19.0 / 11.9.0|
-|Vitest / coverage-v8|5.0.1 / 5.0.1|
-|Vite / TypeScript|8.3.0 / 5.9.2|
-|実行環境|Linux x64、Node environment、forks pool|
-|分離・並列度|isolate有効、4 workers、fileParallelism有効|
-|試験|16ファイル、32テストID、48 assertions、16 inline snapshots|
-|coverage|v8、feature-01〜16、lines/functions/statements 95%以上、branches 75%以上|
+- 変更前・変更後のテストを交互に各3回実行し、経過時間とCPU時間を記録する。
+- テストID、assertion、snapshot、coverage条件を維持したまま比較する。
+- 意図的に実装へ不具合を入れ、変更前後のテストがその不具合を検出できるか確認する。
+- 測定結果・ログ・coverageを保存し、無効な測定と有効な測定を区別する。
+- 同じ検証手順をローカルとGitHub Actionsで実行する。
 
-依存は同梱の`package-lock.json`で固定します。React、DOM、外部API、DB、sleepは使いません。48個の合成カタログモジュールはimport時に決定的な検索indexを作ります。
+## 比較する内容
 
-## 比較する変更
-
-baselineは各テストから48モジュールを再exportするbarrelの`src/features/index.ts`をimportします。candidateは対象の`feature-NN.ts`を直接importします。不要なモジュール評価がimport時間へ影響する、という1つの仮説を比較します。
+このサンプルでは、48個のモジュールをまとめて再exportするファイル（barrel）経由のimportと、対象モジュールからの直接importを比較します。各モジュールは読み込み時に検索用のindexを作成するため、不要なモジュールの読み込みを減らすと実行時間が変わる、という仮説を試せます。
 
 ```diff
 -import { key01, lookup01 } from '../src/features/index.js'
 +import { key01, lookup01 } from '../src/features/feature-01.js'
 ```
 
-全16ファイルで各対象に対応するimport先だけを変更します。固定した変更前の全文は[`reference/baseline-tests.json`](reference/baseline-tests.json)、対応表は[テスト一覧](docs/test-inventory.md)にあります。テストID・assertion・snapshot・coverage・worker・isolationは維持します。検証時に固定基準を生成し直しません。
+`baseline`は変更前、`candidate`は変更後を表します。16個のテストファイルでimport先だけを切り替え、32テスト・48 assertions・16 inline snapshotsとcoverage設定を維持します。
 
-**barrelが公開APIの入口でもある場合は、入口を通るexport名・公開経路・契約の試験を残してください。** 本例は内部機能の合成試験です。必要な公開API試験を除外する理由にはなりません。
+## 動作環境
 
-## 再実行する
+Linux x64を対象としています。GitHub ActionsではUbuntu 24.04を使用します。
 
-上記のNode/npmを用意し、利用・変更を許可された作業用コピーで実行してください。依存を取得できない、または指定版を用意できない場合は、その条件の確認を未実行として止めます。別版への置換やlockfile再生成で成功に見せないでください。
+| 項目 | バージョン・設定 |
+|---|---|
+| Node.js | 24.19.0 |
+| npm | 11.9.0 |
+| Vitest / @vitest/coverage-v8 | 5.0.1 / 5.0.1 |
+| Vite / TypeScript | 8.3.0 / 5.9.2 |
+| テスト環境 | Node、forks pool、isolate有効 |
+| 並列実行 | 4 workers、fileParallelism有効 |
+| coverage閾値 | lines / functions / statements 95%、branches 75% |
+
+比較条件を揃えるため、指定のNode.jsとnpmを使用してください。依存パッケージは同梱の`package-lock.json`からインストールします。
+
+## クイックスタート
+
+Git、上記バージョンのNode.jsとnpmを用意して、以下を実行します。初回の依存取得にはネットワーク接続が必要です。
 
 ```bash
+git clone https://github.com/Issey-Kubota/vitest-ci-practice.git
+cd vitest-ci-practice
+
+node --version
+npm --version
 npm ci
+
 npm run verify:manifest
 npm run measure
-npm run failure-check
-node --test --test-concurrency=1 scripts/check-manifest.test.mjs scripts/check-measure.test.mjs scripts/check-failure.test.mjs
 npm run verify:manifest
 ```
 
-`measure`はbaseline/candidateを交互に各3回、計6回実行します。毎回`node_modules/.vite`を削除し、Node compile cacheを無効にします。OS page cacheやホスト負荷は制御しません。新しいVitest JSON、stdout/stderr、coverage、条件、時間は新規の`artifacts/measure-*/`に保存し、最後にテストを開始時の内容へ戻します。
+`verify:manifest`は、テストの内容と設定が同梱の固定基準に一致しているかを確認します。`measure`は変更前・変更後を交互に各3回実行し、有効な6回が揃った場合に中央値を出力します。測定中はテストファイルのimport先を切り替え、終了時に開始前の内容へ戻します。
 
-`generate`や単独の`test:baseline`／`test:candidate`はこの確認手順では使いません。後者は旧`results/current.json`を上書きします。旧結果と新しい実行結果は分離してください。
+**未コミットの変更がない作業用コピーで実行してください。** 実行中に対象ファイルを編集したり、複数の計測を同時に走らせたりしないでください。
 
-`failure-check`は各import条件で「故障なし」「既知の実装故障」「意図した環境エラー」を確認し、実装とテストを復元します。この別実行は対象2件・coverageなしです。性能測定の全32件・同一coverageとは別に扱います。
+## 結果の見方
 
-補助回帰24件は、模擬結果を含む補助処理の確認です。性能を24回測ったことにはなりません。
+実行ごとに新しい`artifacts/measure-*/`ディレクトリが作られます。
 
-## 結果を読む
+| 出力 | 内容 |
+|---|---|
+| `summary.json` | 各回の時間、有効・無効の判定理由、中央値、実行条件、復元結果 |
+| 各回のVitest JSON | テストとsnapshotの実行結果 |
+| 各回のcoverage・ログ | coverageの詳細、標準出力・標準エラー |
 
-- 起動失敗、欠測、古いJSON、条件不一致、テスト不一致は理由付きの無効記録です。有効6回が揃った場合だけ比較し、欠測を0や推定値にしません。無効があれば測定コマンド全体も失敗します。
-- OS経過時間、VitestのDuration、並列子プロセスを含む合計CPU時間は別の指標です。CPU時間をrunner占有時間・課金時間へ読み替えません。
-- 初版ローカルの中央値は2.710秒→1.960秒、修正後ローカルは4.603秒→2.979秒でした。修正後の2組目は5.193秒→5.281秒と遅くなりました。短い合成例の観測で、普遍的な効果ではありません。
-- 初版ローカル、修正後ローカル、今回のCIは別セッションです。キャッシュ制御も完全には同じではなく、12回・18回の一つの比較へまとめません。
+最初に`summary.json`で6回すべてが有効かを確認し、その後で各回の値と中央値を比較してください。起動失敗、欠測、古い結果ファイル、条件やテストの不一致があると測定は無効になり、コマンドは失敗します。欠測を0秒として比較することはありません。
 
-根拠：[初版ローカル6回](docs/actual-report.md)、[修正後ローカル6回・正常／異常確認](docs/revision-report.md)、[CI確認記録](docs/ci-result.md)、[配布内容と原記録](docs/distribution.md)。
+経過時間は処理の開始から終了までの時間です。CPU時間は並列workerを含む処理時間の合計で、経過時間を上回る場合があります。CPU時間をCIの占有時間や課金時間として扱わないでください。
 
-## CIの扱いと限界
+過去の実行例は[CI実行結果](docs/ci-result.md)と[ローカル実行結果](docs/revision-report.md)を参照できます。環境や実行回によって結果は変わるため、自分の環境でも各回の値を確認してください。
 
-同梱の[workflow](.github/workflows/p29-fixed-validation.yml)と[実行条件の説明](docs/ci-workflow.md)にある初回構成は`ubuntu-24.04`、上記ツール版、単一job、上限15分です。workflowの起動条件は手動の`workflow_dispatch`だけとし、push・PR・定期実行は設定しません。4 workersはそのjob内のVitest並列度です。
+## 不具合の検出を確認する
 
-runnerラベル・ツール版・依存・測定条件を揃えることを「固定」と呼びます。ローカルと同じハードウェアや、全実行で同じホスト状態を意味しません。実CIで成功しても、この合成例をCIで1回確認したという範囲です。
+```bash
+npm run failure-check
+npm run verify:manifest
+```
 
-CIへの必要テスト復帰、継続運用、利用者環境への効果、商品需要は未確認です。DOM/Browser Mode、DB・外部I/O、複数jobの結果結合、実コードの状態・順序依存もこの例では解決しません。試験一致と既知の故障1件の検知は、品質全体の保証ではありません。
+変更前・変更後の両方で、次の3つを確認します。
 
-## 試用・質問
+1. 正常な実装でテストが成功すること。
+2. 実装に既知の不具合を入れると、期待するテストが失敗すること。
+3. 実行ファイルが見つからない環境エラーを、テストによる不具合検出と区別できること。
 
-[試用案内](docs/offer-and-questions.md)とIssueテンプレートを用意しています。[GitHub Issues](https://github.com/Issey-Kubota/vitest-ci-practice/issues)では、課題報告・公開例の実行・本人環境への適用を分けて記録します。社名、個人名、会社コード、生ログ、秘密情報は投稿しないでください。
+結果は`artifacts/failure-*/`へ保存され、実装とテストは終了時に復元されます。この確認では対象を2テストに絞り、coverageを無効にします。性能比較用の測定とは別の実行です。
 
-初回の個別試用支援は最大2チーム、必要時の説明30分＋非同期30分を1チームの予算目安とします。無期限サポートや個別改修の約束ではありません。現在は無料の検証例で、価格・有料版・販売開始日・方式は未定です。予約・決済は受け付けません。
+## GitHub Actionsで実行する
 
-## 利用条件
+自分のアカウントで試す場合は、このリポジトリをforkしてGitHub Actionsを有効にしてください。
 
-本合成例は[MIT License](LICENSE)です。既存の著作権表記を維持してください。自分の環境へ適用するときは、コード・依存・ログの利用条件と変更許可を確認してください。
+1. forkしたリポジトリの **Actions** を開きます。
+2. 同梱の[検証workflow](.github/workflows)を選択します。
+3. **Run workflow** で`main`ブランチを選び、実行します。
+4. 実行ページで各stepの結果を確認し、**Artifacts**からログと測定結果をダウンロードします。
+
+workflowは手動起動のみです。単一jobで依存取得、測定、不具合検出の確認、補助スクリプトのテスト、ファイルの復元確認を行います。上限は15分、artifactの保存期間は30日です。
+
+`main`ブランチからの新規実行を想定しています。同じrunの **Re-run jobs** は受け付けないため、再度試す場合も **Run workflow** から新しいrunを開始してください。詳しい条件は[CIの設定と実行手順](docs/ci-workflow.md)を参照してください。
+
+## ディレクトリ構成
+
+| パス | 内容 |
+|---|---|
+| `src/` | 検証対象のTypeScriptサンプル |
+| `tests/` | 機能テストとinline snapshots |
+| `scripts/` | 計測、固定基準の照合、不具合検出の確認 |
+| `reference/` | 変更前のテストと比較用の固定基準 |
+| `artifacts/` | 実行ごとの測定結果とログ |
+| `results/` | 過去の実行結果 |
+| `docs/` | 設定、テスト一覧、実行結果などの補足資料 |
+
+## 開発用の確認
+
+計測・検証スクリプトを変更する場合は、以下で補助処理のテストを実行できます。
+
+```bash
+node --test --test-concurrency=1 scripts/check-manifest.test.mjs scripts/check-measure.test.mjs scripts/check-failure.test.mjs
+```
+
+このテストには模擬データによる異常系の確認を含みます。性能測定の回数には含めません。
+
+## 利用上の注意
+
+- **直接importが常に適切とは限りません。** barrelが公開APIの入口なら、export名や公開経路を確認するテストも残してください。
+- このサンプルは外部API・DB・DOMを使いません。Browser Mode、外部I/O、状態・順序依存、複数jobの結果結合は対象外です。
+- 各測定前にViteキャッシュを削除し、Node compile cacheを無効にしますが、OSのキャッシュやホスト負荷は制御しません。短い測定ではばらつきがあるため、一定の短縮率は保証されません。
+- 既知の不具合1件を検出できても、すべての不具合を検出できることや品質全体を保証するものではありません。
+- 通常の比較には`measure`を使用してください。`test:baseline`と`test:candidate`はテストファイルを切り替え、`results/current.json`を上書きします。`generate`はサンプル生成用なので、通常の実行手順では不要です。
+- ログには実行環境のパスが含まれます。共有前に内容を確認し、認証情報や非公開コードなどを含めないでください。
+
+## 不具合報告・質問
+
+[GitHub Issues](https://github.com/Issey-Kubota/vitest-ci-practice/issues)から報告できます。OS、Node.js・npmのバージョン、実行コマンド、期待した動作と実際の動作を添えてください。ログは必要な箇所を抜粋し、個人情報や機密情報を除いてください。
+
+## ライセンス
+
+[MIT License](LICENSE)
