@@ -149,7 +149,7 @@ jobs:
           set -euo pipefail
           { date --utc --iso-8601=seconds; npm run failure-check; date --utc --iso-8601=seconds; } 2>&1 | tee "$P29_EVIDENCE/failure-check.log"
 
-      - name: Run 24 helper regressions (includes simulated results)
+      - name: Run 26 helper regressions (includes simulated results)
         id: helpers
         run: |
           set -euo pipefail

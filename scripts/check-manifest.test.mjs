@@ -105,6 +105,7 @@ test('CLI returns exit 0 for candidate and exit 1 for expectation change, preser
   await mkdir(join(root, 'scripts'))
   const script = join(root, 'scripts/verify-manifest.mjs')
   await copyFile(join(source, 'scripts/verify-manifest.mjs'), script)
+  await copyFile(join(source, 'scripts/normalize-text.mjs'), join(root, 'scripts/normalize-text.mjs'))
   const before = spawnSync(process.execPath, [script], { cwd: root, encoding: 'utf8' })
   assert.equal(before.status, 0, before.stderr)
   assert.equal(JSON.parse(before.stdout).valid, true)
@@ -115,4 +116,20 @@ test('CLI returns exit 0 for candidate and exit 1 for expectation change, preser
   assert.equal(JSON.parse(after.stdout).valid, false)
   assert.match(JSON.parse(after.stdout).reasons.join('\n'), /unauthorized_test_change/)
   assert.deepEqual(await readFile(join(root, 'reference/baseline-tests.json')), referenceBytes)
+})
+
+// CRLF checkouts are equivalent, but semantic changes must still fail validation.
+test('CRLF reference and tests pass while a changed CRLF expectation fails', async t => {
+  const root = await fixture(t, 'candidate')
+  for (const name of ['reference/baseline-tests.json', ...reference.files.map(file => file.path)]) {
+    const path = join(root, name)
+    await writeFile(path, (await readFile(path, 'utf8')).replaceAll('\n', '\r\n'))
+  }
+  assert.equal((await verifyManifest(root)).valid, true)
+  const path = join(root, 'tests/feature-01.test.ts')
+  const bytes = await readFile(path)
+  await verifyManifest(root)
+  assert.deepEqual(await readFile(path), bytes)
+  await writeFile(path, bytes.toString().replace('toBe(137)', 'toBe(138)'))
+  assert.equal((await verifyManifest(root)).valid, false)
 })

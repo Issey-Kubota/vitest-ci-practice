@@ -133,3 +133,28 @@ test('CLI exits nonzero when child exits zero but produces no new results', asyn
   await cp(out.output,join(evidence,'cli-missing-outputs'),{recursive:true})
 })
 console.log(`Regression evidence: ${evidence}`)
+
+// Normalize text only during comparison; restoration must preserve original CRLF bytes.
+test('CRLF protected inputs validate and original CRLF tests are restored', async () => {
+  const dir = await fixture('crlf-inputs')
+  const fixed = JSON.parse(await readFile(join(dir, 'reference/measurement-conditions.json')))
+  const baseline = JSON.parse(await readFile(join(dir, 'reference/baseline-tests.json')))
+  const paths = [...Object.keys(fixed.files), ...baseline.files.map(file => file.path),
+    'reference/measurement-conditions.json', 'reference/baseline-tests.json']
+  for (const name of paths) {
+    const path = join(dir, name)
+    await writeFile(path, (await readFile(path, 'utf8')).replaceAll('\n', '\r\n'))
+  }
+  const path = join(dir, 'tests/feature-01.test.ts')
+  const before = await readFile(path)
+  const result = await measure(dir, async () => ({...processResult, startedAt:Date.now(), endedAt:Date.now()}))
+  assert.equal(result.summary.preflight.valid, true)
+  assert.equal(result.summary.records.length, 6)
+  assert.ok(result.summary.records.every(record => record.before.valid && record.after.valid))
+  assert.equal(result.summary.restoration.restored, true)
+  assert.deepEqual(await readFile(path), before)
+  assert.equal(result.summary.complete, false) // Missing fresh reports still reject the batch.
+  await writeFile(join(dir, 'vitest.config.ts'), (await readFile(join(dir, 'vitest.config.ts'), 'utf8')) + '// changed\r\n')
+  const changed = await measure(dir, async () => { throw new Error('must not execute') })
+  assert.ok(changed.summary.fatalReasons.some(reason => reason.includes('changed vitest.config.ts')))
+})

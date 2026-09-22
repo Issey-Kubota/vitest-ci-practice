@@ -159,3 +159,12 @@ node --test --test-concurrency=1 scripts/check-manifest.test.mjs scripts/check-m
 ## ライセンス
 
 [MIT License](LICENSE)
+
+
+## 改行コードの扱い
+
+固定基準・テスト・測定対象ファイルの照合では、CRLFをLFとして比較します。改行形式だけの違いで失敗することはありません。空白、期待値、コードなど、それ以外の変更は引き続き検出します。ファイルを自動変換する処理ではなく、測定後の復元では開始時の改行を含む元のバイト列を維持します。照合用ハッシュはLFに揃えた内容のハッシュです。
+
+Gitでの取得時は`.gitattributes`によりLFを使用します。以前取得したコピーにCRLFが残っていても、更新後の照合処理で扱えます。
+
+なお、改行への対応はWindowsネイティブ環境での性能測定への対応とは別です。`measure`はLinux x64を対象とするため、Windowsでは指定版のNode.jsとnpmを用意したWSL2などのLinux環境で実行してください。

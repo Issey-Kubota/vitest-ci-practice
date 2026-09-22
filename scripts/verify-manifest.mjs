@@ -1,16 +1,17 @@
+import { normalizeTextBytes } from './normalize-text.mjs'
 import { readFile, readdir } from 'node:fs/promises'
 import { createHash } from 'node:crypto'
 import { resolve, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
-// Pin the reviewed reference bytes; verification must never regenerate its own baseline.
+// Pin the reviewed LF-normalized reference bytes; verification must never regenerate its own baseline.
 const referenceDigest = '7ce2fe616479a410958005cde31799de0315139da2f104bede67bcd886c19f61'
 /**
- * Hash reference or test contents without modifying them.
+ * Hash reference or test contents after CRLF normalization; never modify files.
  * @param {string | Buffer} value - Content to fingerprint.
- * @returns {string} Hexadecimal SHA-256 digest.
+ * @returns {string} Hexadecimal SHA-256 digest of LF-normalized bytes.
  */
-const hash = value => createHash('sha256').update(value).digest('hex')
+const hash = value => createHash('sha256').update(normalizeTextBytes(value)).digest('hex')
 
 /**
  * Recursively inventory tests, including unexpected files and symlinks.
@@ -84,9 +85,10 @@ export async function verifyManifest(root = new URL('..', import.meta.url)) {
       continue
     }
     const baseline = Buffer.from(entry.baselineContent)
-    // Accept only the designated import substitution; all other bytes must match.
+    // Accept only the designated import substitution; all other bytes must match after CRLF normalization.
     const candidate = Buffer.from(entry.baselineContent.replace(entry.baselineImport, entry.candidateImport))
-    const variant = bytes.equals(baseline) ? 'baseline' : bytes.equals(candidate) ? 'candidate' : null
+    const comparable = normalizeTextBytes(bytes)
+    const variant = comparable.equals(normalizeTextBytes(baseline)) ? 'baseline' : comparable.equals(normalizeTextBytes(candidate)) ? 'candidate' : null
     if (variant === null) reasons.push(`unauthorized_test_change: ${entry.path}: only its exact designated import target may change`)
     else variants.add(variant)
     // Parse the fixed, controlled fixture format, not arbitrary user test syntax.

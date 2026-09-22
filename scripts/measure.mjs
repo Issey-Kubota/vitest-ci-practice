@@ -1,3 +1,4 @@
+import { normalizeTextBytes } from './normalize-text.mjs'
 // Measure this fixed sample using Vitest reports and process-level timing.
 import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises'
 import { spawn, execFileSync } from 'node:child_process'
@@ -12,11 +13,11 @@ const ROOT = fileURLToPath(new URL('..', import.meta.url))
 const CONDITIONS_HASH = 'd5f6bde80f15b39d82623e15ceb1902226c3fa17dce636b83c5f9affcc31aa36'
 const ORDER = ['baseline', 'candidate', 'baseline', 'candidate', 'baseline', 'candidate']
 /**
- * Fingerprint a protected input.
+ * Fingerprint a protected text input after CRLF normalization.
  * @param {string | Buffer} data - Input bytes or text.
- * @returns {string} Hexadecimal SHA-256 digest.
+ * @returns {string} Hexadecimal SHA-256 digest of LF-normalized bytes.
  */
-const sha256 = data => createHash('sha256').update(data).digest('hex')
+const sha256 = data => createHash('sha256').update(normalizeTextBytes(data)).digest('hex')
 /**
  * Select the middle value; callers supply three samples per variant.
  * @param {number[]} xs - Nonempty odd-length sample set; the input is not mutated.

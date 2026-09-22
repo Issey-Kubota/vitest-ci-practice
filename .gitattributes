@@ -1,0 +1,2 @@
+# Keep source, configuration and reference text consistent across checkouts.
+* text=auto eol=lf
