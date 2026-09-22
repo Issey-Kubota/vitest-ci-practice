@@ -1,47 +1,47 @@
 # Vitest CI Practice
 
-Vitestのテストを減らさずに、import方法の変更による実行時間の違いを比較するサンプルプロジェクトです。TypeScriptで書かれた小さなサンプルを使い、**計測 → 変更 → 同じ条件で再計測 → テスト内容の維持確認**を実践できます。
+A TypeScript sample for comparing the execution time of Vitest tests after changing their imports, while preserving the tests themselves. Practice a repeatable workflow: **measure → change one thing → measure under the same conditions → verify test preservation**.
 
-テストの高速化を試したい方や、CIでの計測・比較手順を学びたい方を対象としています。リポジトリをcloneして実行する学習・検証用のサンプルで、任意のプロジェクトを自動診断・修正する機能はありません。
+This repository is for developers learning how to evaluate test performance locally and in CI. Clone and run the sample; it does not automatically diagnose or optimize arbitrary projects.
 
-## できること
+## Features
 
-- 変更前・変更後のテストを交互に各3回実行し、経過時間とCPU時間を記録する。
-- テストID、assertion、snapshot、coverage条件を維持したまま比較する。
-- 意図的に実装へ不具合を入れ、変更前後のテストがその不具合を検出できるか確認する。
-- 測定結果・ログ・coverageを保存し、無効な測定と有効な測定を区別する。
-- 同じ検証手順をローカルとGitHub Actionsで実行する。
+- Run baseline and candidate tests three times each, in alternating order.
+- Record wall time and CPU time while preserving test IDs, assertions, snapshots, and coverage settings.
+- Inject a known implementation defect and check that both import variants detect it.
+- Save reports, coverage, and logs, distinguishing valid measurements from invalid ones.
+- Run the validation workflow locally or through GitHub Actions.
 
-## 比較する内容
+## What is compared?
 
-このサンプルでは、48個のモジュールをまとめて再exportするファイル（barrel）経由のimportと、対象モジュールからの直接importを比較します。各モジュールは読み込み時に検索用のindexを作成するため、不要なモジュールの読み込みを減らすと実行時間が変わる、という仮説を試せます。
+The baseline imports through a barrel that re-exports 48 modules. The candidate imports the required module directly. Each module builds a lookup index at import time, allowing you to test whether avoiding unnecessary module initialization reduces execution time.
 
 ```diff
 -import { key01, lookup01 } from '../src/features/index.js'
 +import { key01, lookup01 } from '../src/features/feature-01.js'
 ```
 
-`baseline`は変更前、`candidate`は変更後を表します。16個のテストファイルでimport先だけを切り替え、32テスト・48 assertions・16 inline snapshotsとcoverage設定を維持します。
+Only the import path changes across the 16 test files. Both variants retain 32 tests, 48 assertions, 16 inline snapshots, and the same coverage configuration.
 
-## 動作環境
+## Requirements
 
-Linux x64を対象としています。GitHub ActionsではUbuntu 24.04を使用します。
+Measurement targets **Linux x64**. GitHub Actions uses Ubuntu 24.04. On Windows, use a Linux environment such as WSL2 with the required Node.js and npm versions, or use GitHub Actions. Native Windows measurement is not supported.
 
-| 項目 | バージョン・設定 |
+| Component | Version or setting |
 |---|---|
 | Node.js | 24.19.0 |
 | npm | 11.9.0 |
 | Vitest / @vitest/coverage-v8 | 5.0.1 / 5.0.1 |
 | Vite / TypeScript | 8.3.0 / 5.9.2 |
-| テスト環境 | Node、forks pool、isolate有効 |
-| 並列実行 | 4 workers、fileParallelism有効 |
-| coverage閾値 | lines / functions / statements 95%、branches 75% |
+| Test environment | Node, forks pool, isolation enabled |
+| Parallelism | 4 workers, fileParallelism enabled |
+| Coverage thresholds | 95% lines / functions / statements; 75% branches |
 
-比較条件を揃えるため、指定のNode.jsとnpmを使用してください。依存パッケージは同梱の`package-lock.json`からインストールします。
+Use the specified versions to keep comparison conditions consistent. Dependencies are installed from the committed `package-lock.json`.
 
-## クイックスタート
+## Quick start
 
-Git、上記バージョンのNode.jsとnpmを用意して、以下を実行します。初回の依存取得にはネットワーク接続が必要です。
+Install Git and the required Node.js and npm versions first. Initial dependency installation requires network access.
 
 ```bash
 git clone https://github.com/Issey-Kubota/vitest-ci-practice.git
@@ -51,122 +51,121 @@ node --version
 npm --version
 npm ci
 
-# 1. 計測前：テストが比較用の固定基準に一致するか確認
+# 1. Before measurement: check the tests against the fixed reference.
 npm run verify:manifest
 
-# 2. import先を切り替えて計測し、開始時のテストへ復元
+# 2. Switch imports, measure both variants, and restore the original tests.
 npm run measure
 
-# 3. 計測後：テストに想定外の変更が残っていないか再確認
+# 3. After measurement: check that no unexpected test changes remain.
 npm run verify:manifest
 ```
 
-### なぜ計測の前後で同じ確認をするのか
+`npm ci` installs the dependencies recorded in the lockfile. It does not install Node.js or npm themselves.
 
-`verify:manifest`は、その時点の`tests/`を`reference/baseline-tests.json`という固定の見本と照合するコマンドです。テストを実行したり、基準やファイルを書き換えたりはしません。前後で使う基準は同じで、**確認するタイミングと目的が違います。**
+### Why run the same check before and after measurement?
 
-| 手順 | 確認・実行すること | 目的 |
+`verify:manifest` compares the current `tests/` directory with the fixed reference in `reference/baseline-tests.json`. It neither runs tests nor rewrites files or references. Both checks use the same reference, but serve different purposes.
+
+| Step | What happens | Purpose |
 |---|---|---|
-| 1. 計測前の`verify:manifest` | 16ファイルの全文とファイル一覧を照合。指定されたimport先以外の変更、ファイルの追加・欠落を検出 | テストの期待値などが変わっていない、比較できる状態から始める |
-| 2. `measure` | import先をbaseline/candidateへ交互に切り替え、各3回計測。最後に開始時のファイル内容へ復元 | 同じテスト内容でimport方法だけを比較する |
-| 3. 計測後の`verify:manifest` | 計測後のテストを、手順1と同じ固定の見本へ再照合 | 計測後もテストが許可された内容であることを確認する |
+| Before: `verify:manifest` | Compare the inventory and full contents of all 16 files, allowing only designated import changes and LF/CRLF differences | Start with a valid, comparable set of tests |
+| `measure` | Alternate baseline/candidate imports, run each three times, then restore the starting contents | Compare import strategies using the same tests |
+| After: `verify:manifest` | Compare the restored tests with the same fixed reference | Independently confirm that the tests remain valid |
 
-照合では、全ファイルがbaselineまたはcandidateに揃っている状態を許可します。そのため、後の`verify:manifest`だけで「開始時と全く同じ内容へ戻った」と判定しているわけではありません。**開始時の内容とのバイト単位の一致は`measure`自身が確認し、`summary.json`の`restoration.restored`へ記録します。** 後のコマンドは、その復元処理が終わった後の独立した再確認です。
+The manifest check accepts either a consistent baseline or a consistent candidate. It does not itself prove that the final files are identical to their starting state. **The measurement script verifies that restoration is byte-for-byte identical to the starting contents and records the result as `restoration.restored` in `summary.json`.**
 
-正常時は、前後の照合で`valid: true`が表示されます。途中で失敗したら次へ進まず、`reasons`や測定の`fatalReasons`を確認してください。Node.js・依存版、ソース、lockfile、Vitest設定などの測定条件は、`verify:manifest`ではなく`measure`側が別途検証します。
+Successful manifest checks print `valid: true`. If a command fails, inspect `reasons` or `fatalReasons` before continuing. Node.js and dependency versions, source files, the lockfile, and Vitest configuration are checked separately by `measure`.
 
-**未コミットの変更がない作業用コピーで実行してください。** 実行中に対象ファイルを編集したり、複数の計測を同時に走らせたりしないでください。
+**Use a working copy without uncommitted changes.** Do not edit the sample or run concurrent measurements while these commands are running.
 
-## 結果の見方
+## Reading results
 
-**[コマンド出力・保存ファイルの例と読み方](docs/output-guide.md)**では、正常時のJSON、各項目の意味、測定前に停止した場合の調べ方を説明しています。`summary.json`・`record.json`・テスト結果・coverage・故障確認のファイル例も掲載しています。
+See **[Output examples and interpretation](docs/output-guide.md)** for console output, saved JSON examples, field meanings, and troubleshooting. It covers summaries, individual measurements, test results, coverage, and fault checks.
 
-実行ごとに新しい`artifacts/measure-*/`ディレクトリが作られます。
+Each measurement creates a new `artifacts/measure-*/` directory.
 
-| 出力 | 内容 |
+| Output | Contents |
 |---|---|
-| `summary.json` | 各回の時間、有効・無効の判定理由、中央値、実行条件、復元結果 |
-| 各回のVitest JSON | テストとsnapshotの実行結果 |
-| 各回のcoverage・ログ | coverageの詳細、標準出力・標準エラー |
+| `summary.json` | Per-run measurements, validity reasons, medians, conditions, and restoration |
+| Per-run Vitest JSON | Test and snapshot results |
+| Per-run coverage and logs | Coverage details, stdout, and stderr |
 
-最初に`summary.json`で6回すべてが有効かを確認し、その後で各回の値と中央値を比較してください。起動失敗、欠測、古い結果ファイル、条件やテストの不一致があると測定は無効になり、コマンドは失敗します。欠測を0秒として比較することはありません。
+First check that all six runs are valid, then compare individual values and medians. Startup failures, missing or stale output, and mismatched conditions or tests invalidate a measurement and cause the command to fail. Missing measurements are never treated as zero seconds.
 
-経過時間は処理の開始から終了までの時間です。CPU時間は並列workerを含む処理時間の合計で、経過時間を上回る場合があります。CPU時間をCIの占有時間や課金時間として扱わないでください。
+Wall time is elapsed time from start to finish. CPU time is summed across processes, including parallel workers, and may exceed wall time. It is not CI runner occupancy or billable time.
 
-環境や実行回によって結果は変わるため、各回の値と中央値の両方を確認してください。`artifacts/`は実行時に自動作成される出力先です。過去の測定結果は配布せず、新しい結果もGitの追跡対象から除外しています。
+Results vary by environment and execution. `artifacts/` is created at runtime and excluded from Git; historical measurement files are not bundled.
 
-## 不具合の検出を確認する
+## Checking defect detection
 
 ```bash
 npm run failure-check
 npm run verify:manifest
 ```
 
-変更前・変更後の両方で、次の3つを確認します。
+For both import variants, this checks that:
 
-1. 正常な実装でテストが成功すること。
-2. 実装に既知の不具合を入れると、期待するテストが失敗すること。
-3. 実行ファイルが見つからない環境エラーを、テストによる不具合検出と区別できること。
+1. The healthy implementation passes.
+2. A known implementation defect causes the expected test to fail.
+3. A missing executable is classified as an environment error rather than successful defect detection.
 
-結果は`artifacts/failure-*/`へ保存され、実装とテストは終了時に復元されます。この確認では対象を2テストに絞り、coverageを無効にします。性能比較用の測定とは別の実行です。
+Results are saved under `artifacts/failure-*/`. Source and test files are restored afterward. These targeted checks run two tests with coverage disabled and are separate from performance measurements.
 
-## GitHub Actionsで実行する
+## Running on GitHub Actions
 
-自分のアカウントで試す場合は、このリポジトリをforkしてGitHub Actionsを有効にしてください。
+Fork the repository and enable GitHub Actions in your fork.
 
-1. forkしたリポジトリの **Actions** を開きます。
-2. 同梱の[検証workflow](.github/workflows)を選択します。
-3. **Run workflow** で`main`ブランチを選び、実行します。
-4. 実行ページで各stepの結果を確認し、**Artifacts**からログと測定結果をダウンロードします。
+1. Open **Actions**.
+2. Select **Vitest validation** from the included [workflows](.github/workflows).
+3. Choose **Run workflow** and select `main`.
+4. Inspect the steps and download the reports from **Artifacts**.
 
-workflowは手動起動のみです。単一jobで依存取得、測定、不具合検出の確認、補助スクリプトのテスト、ファイルの復元確認を行います。上限は15分、artifactの保存期間は30日です。
+The workflow runs manually only. A single job installs dependencies, measures performance, checks defect detection, tests the helper scripts, and verifies file restoration. Its timeout is 15 minutes, and artifacts are retained for 30 days.
 
-`main`ブランチからの新規実行を想定しています。同じrunの **Re-run jobs** は受け付けないため、再度試す場合も **Run workflow** から新しいrunを開始してください。詳しい条件は[CIの設定と実行手順](docs/ci-workflow.md)を参照してください。
+Only a new run on `main` is accepted. Use **Run workflow** again instead of **Re-run jobs**. See [CI configuration and workflow](docs/ci-workflow.md) for details.
 
-## ディレクトリ構成
+## Repository layout
 
-| パス | 内容 |
+| Path | Purpose |
 |---|---|
-| `src/` | 検証対象のTypeScriptサンプル |
-| `tests/` | 機能テストとinline snapshots |
-| `scripts/` | 計測・検証スクリプトと開発用テスト。`fixtures/`は補助テスト専用データ |
-| `reference/` | 変更前のテストと比較用の固定基準 |
-| `artifacts/` | 実行時に生成される測定結果とログ（Git管理外） |
-| `results/` | 個別テストコマンドの実行時に生成される出力（Git管理外） |
-| `docs/` | CIの使い方、テスト・固定基準の説明、出力例と読み方 |
+| `src/` | TypeScript sample implementation |
+| `tests/` | Feature tests and inline snapshots |
+| `scripts/` | Measurement and validation helpers, development tests, and test-only `fixtures/` |
+| `reference/` | Baseline tests and fixed comparison conditions |
+| `artifacts/` | Generated measurement reports and logs; not tracked by Git |
+| `results/` | Generated output from individual test commands; not tracked by Git |
+| `docs/` | CI instructions, test/reference documentation, and output examples |
 
-## 開発用の確認
+## Development checks
 
-計測・検証スクリプトを変更する場合は、以下で補助処理のテストを実行できます。
+After changing measurement or validation helpers, run:
 
 ```bash
 node --test --test-concurrency=1 scripts/check-manifest.test.mjs scripts/check-measure.test.mjs scripts/check-failure.test.mjs
 ```
 
-このテストには模擬データによる異常系の確認を含みます。`scripts/fixtures/vitest-success.json`はそのための最小限の入力データで、性能測定結果ではありません。過去の実行ログを用意せずにテストできます。
+These tests include simulated error cases. `scripts/fixtures/vitest-success.json` is minimal test input, not performance evidence. Historical execution logs are not required.
 
-## 利用上の注意
+## Limitations and precautions
 
-- **直接importが常に適切とは限りません。** barrelが公開APIの入口なら、export名や公開経路を確認するテストも残してください。
-- このサンプルは外部API・DB・DOMを使いません。Browser Mode、外部I/O、状態・順序依存、複数jobの結果結合は対象外です。
-- 各測定前にViteキャッシュを削除し、Node compile cacheを無効にしますが、OSのキャッシュやホスト負荷は制御しません。短い測定ではばらつきがあるため、一定の短縮率は保証されません。
-- 既知の不具合1件を検出できても、すべての不具合を検出できることや品質全体を保証するものではありません。
-- 通常の比較には`measure`を使用してください。`test:baseline`と`test:candidate`はテストファイルを切り替え、`results/current.json`を上書きします。`generate`はサンプル生成用なので、通常の実行手順では不要です。
-- ログには実行環境のパスが含まれます。共有前に内容を確認し、認証情報や非公開コードなどを含めないでください。
+- **Direct imports are not always appropriate.** If a barrel is a public API entry point, retain tests for its exports and public import paths.
+- The sample does not use external APIs, databases, or the DOM. Browser Mode, external I/O, state/order dependencies, and combining multiple CI jobs are outside its scope.
+- Each measurement clears the Vite cache and disables the Node compile cache. OS caches and host load are not controlled. Short measurements vary; no speedup is guaranteed.
+- Detecting one known defect does not guarantee detection of all defects or overall software quality.
+- Use `measure` for normal comparisons. `test:baseline` and `test:candidate` switch test files and overwrite `results/current.json`. `generate` is a maintenance command and is not needed for normal use.
+- Logs contain environment paths. Review them before sharing and remove credentials, private code, and other sensitive information.
 
-## 不具合報告・質問
+## Line endings
 
-[GitHub Issues](https://github.com/Issey-Kubota/vitest-ci-practice/issues)から報告できます。OS、Node.js・npmのバージョン、実行コマンド、期待した動作と実際の動作を添えてください。ログは必要な箇所を抜粋し、個人情報や機密情報を除いてください。
+Reference, test, and protected-input comparisons treat CRLF as LF. Whitespace, expectations, code, and all other changes are still checked. Validation does not rewrite the files. Restoration preserves the original bytes, including the original line endings. Comparison hashes describe LF-normalized contents.
 
-## ライセンス
+`.gitattributes` requests LF for Git checkouts. Existing CRLF working copies are also accepted by the validators. This does not add native Windows measurement support; `measure` still requires Linux x64.
+
+## Issues and questions
+
+Use [GitHub Issues](https://github.com/Issey-Kubota/vitest-ci-practice/issues). Include your OS, Node.js/npm versions, command, expected behavior, and actual behavior. Share relevant log excerpts with personal and confidential information removed.
+
+## License
 
 [MIT License](LICENSE)
-
-
-## 改行コードの扱い
-
-固定基準・テスト・測定対象ファイルの照合では、CRLFをLFとして比較します。改行形式だけの違いで失敗することはありません。空白、期待値、コードなど、それ以外の変更は引き続き検出します。ファイルを自動変換する処理ではなく、測定後の復元では開始時の改行を含む元のバイト列を維持します。照合用ハッシュはLFに揃えた内容のハッシュです。
-
-Gitでの取得時は`.gitattributes`によりLFを使用します。以前取得したコピーにCRLFが残っていても、更新後の照合処理で扱えます。
-
-なお、改行への対応はWindowsネイティブ環境での性能測定への対応とは別です。`measure`はLinux x64を対象とするため、Windowsでは指定版のNode.jsとnpmを用意したWSL2などのLinux環境で実行してください。

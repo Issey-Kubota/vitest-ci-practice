@@ -1,36 +1,35 @@
-# テストと固定基準
+# Tests and fixed references
 
-対象は`tests/feature-01.test.ts`〜`feature-16.test.ts`です。各ファイルに次の2テストがあります。
+The sample uses `tests/feature-01.test.ts` through `tests/feature-16.test.ts`. Each file contains two tests.
 
-| テスト | assertion数 | snapshot数 | 確認すること |
+| Test | Assertions | Snapshots | Purpose |
 |---|---:|---:|---|
-| `feature-NN > round-trips a catalogue key` | 2 | 1 | keyの生成と逆引き結果 |
-| `feature-NN > returns -1 for an unknown key` | 1 | 0 | 未登録keyの戻り値 |
+| `feature-NN > round-trips a catalogue key` | 2 | 1 | Check key generation and reverse lookup |
+| `feature-NN > returns -1 for an unknown key` | 1 | 0 | Check the sentinel value for unknown keys |
 
-全体で32テスト・48 assertions・16 inline snapshotsです。baselineはbarrel経由、candidateは対象モジュールから直接importします。
+There are 32 tests, 48 assertions, and 16 inline snapshots in total. The baseline imports through the barrel; the candidate imports the target module directly.
 
-## 実行に必要なreferenceファイル
+## Required reference files
 
-`reference/`は過去の実行結果ではなく、現在の検証スクリプトが読み込む固定基準です。
+`reference/` contains the fixed inputs used by the validators, not historical execution results.
 
-- `baseline-tests.json`：変更前のテスト全文と、許可するimport先の対応表。`verify:manifest`がファイル一覧・全文を照合し、期待値・snapshot・テストIDなどの変更や、ファイルの追加・欠落を検出します。
-- `measurement-conditions.json`：Node.js・依存パッケージの版と、ソース・設定・lockfileなどのハッシュ。`measure`が同じ測定条件かを確認します。
+- `baseline-tests.json`: full baseline test contents and the permitted import substitutions. `verify:manifest` checks the file inventory and full contents, detecting changed expectations, snapshots, test IDs, and added or missing files.
+- `measurement-conditions.json`: Node.js/dependency versions and hashes of source, configuration, and lockfiles. `measure` uses these to verify consistent conditions.
 
-スクリプトは基準JSON自身のハッシュも検証します。通常の実行では基準を編集・再生成しないでください。JSONに含まれる由来の識別子は固定基準の一部で、別途ZIPや過去ログを取得する必要はありません。
+The scripts also verify the reference JSON hashes themselves. Do not edit or regenerate the references during normal execution. Provenance identifiers in the JSON are part of the fixed references; you do not need to obtain historical archives or logs.
 
-## 照合と復元の違い
+## Validation versus restoration
 
-`verify:manifest`は、その時点のテストが許可されたbaselineまたはcandidateに揃っているかを調べる読み取り専用の処理です。前回実行時のファイルを保存したり、前後の内容を比較したりはしません。
+`verify:manifest` is read-only. It checks whether the current tests consistently match an allowed baseline or candidate variant. It does not save the previous state or compare before/after execution.
 
-`measure`は、開始時のテスト内容をメモリーに保存し、計測後に復元してバイト一致を検証します。`summary.json`の`restoration.restored`で結果を確認できます。計測後の`verify:manifest`は、復元処理後のテストを固定基準へ再照合します。
+`measure` saves the starting test contents in memory, restores them after execution, and verifies byte-for-byte equality. Inspect `restoration.restored` in `summary.json`. The subsequent `verify:manifest` independently checks the restored tests against the fixed reference.
 
-強制終了などで復元処理が完了しなかった場合は、作業ツリーの差分を確認してから次の実行を始めてください。
+If forced termination prevents cleanup, inspect the working-tree changes before running again.
 
+## Line endings
 
-## 改行コードの扱い
+Reference, test, and protected-input comparisons normalize CRLF to LF. Differences in whitespace, expectations, code, and all other bytes are still detected. Validation does not rewrite files. Restoration preserves the original bytes, including line endings. Comparison hashes are computed from LF-normalized contents.
 
-固定基準・テスト・測定対象ファイルの照合では、CRLFをLFとして比較します。改行形式だけの違いで失敗することはありません。空白、期待値、コードなど、それ以外の変更は引き続き検出します。ファイルを自動変換する処理ではなく、測定後の復元では開始時の改行を含む元のバイト列を維持します。照合用ハッシュはLFに揃えた内容のハッシュです。
+`.gitattributes` requests LF for Git checkouts. The validators also accept CRLF files left in older working copies.
 
-Gitでの取得時は`.gitattributes`によりLFを使用します。以前取得したコピーにCRLFが残っていても、更新後の照合処理で扱えます。
-
-なお、改行への対応はWindowsネイティブ環境での性能測定への対応とは別です。`measure`はLinux x64を対象とするため、Windowsでは指定版のNode.jsとnpmを用意したWSL2などのLinux環境で実行してください。
+This is separate from native Windows measurement support. `measure` requires Linux x64. On Windows, use a Linux environment such as WSL2 with the specified Node.js/npm versions.

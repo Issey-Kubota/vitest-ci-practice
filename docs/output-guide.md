@@ -1,12 +1,12 @@
-# 出力例と結果の読み方
+# Output examples and interpretation
 
-まずコマンド出力で成否を確認し、保存先の`summary.json`で全体を、各回の`record.json`で理由を確認します。テストの詳細は`vitest.json`、coverageは`coverage/coverage-summary.json`、起動エラーの詳細は`stdout.txt`・`stderr.txt`を開いてください。JSONとログはテキストエディターで読めます。
+Start with the command output, then inspect `summary.json` for the overall result and each `record.json` for individual decisions. Open `vitest.json` for test details, `coverage/coverage-summary.json` for coverage, and `stdout.txt` / `stderr.txt` for execution diagnostics. All are readable in a text editor.
 
-以下の成功例は[GitHub Actionsでの実行例](https://github.com/Issey-Kubota/vitest-ci-practice/actions/runs/35611291375)の値を使っています。対象commitは`655c46762be358e2342677317d1d872dc957faf4`で、現行版の再測定結果や性能保証ではありません。保存先は説明用の`/path/to/vitest-ci-practice`へ置き換えています。ファイル例は読み方に必要なフィールドを抜粋しており、実物には環境・ハッシュ・他のテストなども含まれます。サンプルJSONを実行結果の代わりに配置しないでください。
+The successful measurement examples below use values from [a GitHub Actions run](https://github.com/Issey-Kubota/vitest-ci-practice/actions/runs/35611291375) at commit `655c46762be358e2342677317d1d872dc957faf4`. They are not new measurements of the current version or performance guarantees. Paths have been replaced with `/path/to/vitest-ci-practice`. File examples show selected fields; actual files also contain environment details, hashes, and other test records. Do not place these examples in an output directory as a substitute for real results.
 
-## 1. 固定基準の確認：verify:manifest
+## 1. Reference validation: verify:manifest
 
-`npm run verify:manifest`の出力例（抜粋）です。このコマンドはJSONを標準出力へ表示し、単独実行では結果ファイルを保存しません。
+An excerpt from `npm run verify:manifest` follows. The command prints JSON to stdout; by itself, it does not save a result file.
 
 ```json
 {
@@ -18,13 +18,13 @@
 }
 ```
 
-`valid: true`は、その時点のテストが固定基準に合うことを表します。テストを実行して成功したという意味ではありません。`variant`はimportの状態で、`baseline`がbarrel経由、`candidate`が直接importです。
+`valid: true` means the current tests match the fixed reference. It does not mean the tests have been executed successfully. `variant` identifies the import strategy: `baseline` uses the barrel, and `candidate` uses direct imports.
 
-失敗時は`reasons`を確認します。`reference_digest_mismatch`は基準ファイルの不一致、`unauthorized_test_change`は許可されたimport変更以外の差分です。現行版ではCRLF/LFだけの違いは許容します。詳しくは[テストと固定基準](test-inventory.md)を参照してください。
+On failure, inspect `reasons`. `reference_digest_mismatch` means the reference differs from its expected contents. `unauthorized_test_change` means there is a change beyond the permitted import substitution. The current validators accept LF/CRLF differences. See [Tests and fixed references](test-inventory.md).
 
-## 2. 計測コマンドの出力：measure
+## 2. Measurement command output: measure
 
-`npm run measure`は全6回を実行した後、画面へ次の要約を表示します。
+After completing all six runs, `npm run measure` prints a summary like this:
 
 ```json
 {
@@ -48,39 +48,39 @@
 }
 ```
 
-| 項目 | 読み方 |
+| Field | Meaning |
 |---|---|
-| `output` | 今回の結果を保存したディレクトリ |
-| `complete` | 有効な6回が揃い、致命的なエラーがなく、復元確認も完了したか |
-| `validCount` / `invalidCount` | 有効／無効と判定された測定回数 |
-| `fatalReasons` | 事前条件や復元など、処理全体に関するエラー |
-| `comparison` | 条件を満たした実測の比較。比較できなければ`null` |
-| `samples` | そのvariantの有効な測定数 |
-| `medianWallMs` | 経過時間の中央値（ミリ秒）。2226 msは2.226秒 |
-| `medianCpuMs` | 並列workerを含む合計CPU時間の中央値（ミリ秒） |
+| `output` | Directory containing this execution's reports |
+| `complete` | Whether all six runs are valid, no fatal errors occurred, and restoration was verified |
+| `validCount` / `invalidCount` | Number of valid / invalid measurement attempts |
+| `fatalReasons` | Errors affecting the overall process, such as preflight or restoration failures |
+| `comparison` | Comparison of valid real measurements; `null` when unavailable |
+| `samples` | Number of valid samples for that variant |
+| `medianWallMs` | Median elapsed time in milliseconds; 2226 ms is 2.226 seconds |
+| `medianCpuMs` | Median total CPU time in milliseconds, including parallel workers |
 
-この例は、経過時間の中央値が2.226秒から1.517秒へ、0.709秒（約31.9%）短縮したと読めます。CPU時間は並列処理の合計なので経過時間を上回ることがあります。CIの占有時間や課金時間には読み替えません。
+In this example, median wall time decreases from 2.226 to 1.517 seconds: a reduction of 0.709 seconds, or about 31.9%. CPU time sums work across processes and can exceed wall time. It is not CI runner occupancy or billable time.
 
-**`complete: true`は「高速化に成功した」という意味ではありません。** 変更後が遅くても、計測・検証・復元が正常なら`true`です。中央値だけでなく各回の値も確認してください。
+**`complete: true` does not mean a speedup was achieved.** A slower candidate still produces `true` if measurement, validation, and restoration succeed. Inspect individual runs as well as medians.
 
-## 3. 保存されるファイル
+## 3. Generated files
 
-`measure-*`の末尾は毎回変わります。既存の結果へ上書きせず、新しいディレクトリに保存します。
+The suffix of `measure-*` changes on each execution. Results are saved in a new directory rather than overwriting existing reports.
 
-| 保存先（measure-*からの相対パス） | 内容 |
+| Path relative to measure-* | Contents |
 |---|---|
-| `summary.json` | 6回分の記録、比較、環境、キャッシュ条件、復元結果 |
-| `1-baseline/record.json` | 1回目の有効性・時間・条件・判定理由 |
-| `1-baseline/vitest.json` | 1回目のVitestによるテスト・snapshot結果 |
-| `1-baseline/coverage/coverage-summary.json` | 1回目のcoverage集計 |
-| `1-baseline/stdout.txt` / `stderr.txt` | 1回目の標準出力／標準エラー |
-| `2-candidate/`〜`6-candidate/` | 同じ種類のファイルを各回別に保存 |
+| `summary.json` | All six records, comparison, environment, caches, and restoration |
+| `1-baseline/record.json` | First run's validity, timings, conditions, and decision reasons |
+| `1-baseline/vitest.json` | First run's Vitest test and snapshot results |
+| `1-baseline/coverage/coverage-summary.json` | First run's coverage summary |
+| `1-baseline/stdout.txt` / `stderr.txt` | First run's standard output / error |
+| `2-candidate/` through `6-candidate/` | Equivalent files stored separately for the remaining runs |
 
-順番は`1-baseline`、`2-candidate`、`3-baseline`、`4-candidate`、`5-baseline`、`6-candidate`です。測定前に停止した場合は、各回のディレクトリやファイルが作られないことがあります。
+The order is `1-baseline`, `2-candidate`, `3-baseline`, `4-candidate`, `5-baseline`, and `6-candidate`. If execution stops before measurement, the per-run directories or files may not exist.
 
-### summary.json：全体と復元の確認
+### summary.json: overall result and restoration
 
-コマンド出力より詳しい情報を持つファイルです。以下は集計と復元状態の抜粋です。
+This file contains more detail than the console summary. The following excerpt shows aggregation and restoration:
 
 ```json
 {
@@ -107,13 +107,13 @@
 }
 ```
 
-`restoration.restored: true`は、保存したテストを元に戻し、開始時とのバイト一致を確認できたことを表します。`files: 16`は復元対象のファイル数です。計測前に停止して`files: 0`の場合は、テストの切り替えまで進んでいません。復元欄だけで測定成功とは判断せず、`complete`・回数・エラーも見てください。
+`restoration.restored: true` means saved test contents were restored and checked byte-for-byte against their starting state. `files: 16` is the number of saved files. If execution stopped before measurement and `files` is `0`, import switching was never reached. Do not infer measurement success from restoration alone; also inspect `complete`, counts, and errors.
 
-同じファイルの`records`配列には各回の詳細が入り、`conditions`・`runner`・`cache`には実行条件が入ります。異なる環境やセッションの値はひとつの比較に混ぜないでください。
+The `records` array contains individual run details. `conditions`, `runner`, and `cache` describe the execution environment. Do not combine values from different environments or sessions into one comparison.
 
-### record.json：1回分の有効性と時間
+### record.json: one run's validity and timing
 
-`1-baseline/record.json`の抜粋です。
+An excerpt from `1-baseline/record.json`:
 
 ```json
 {
@@ -136,15 +136,15 @@
 }
 ```
 
-`sequence`は全体での実行順、`attempt`は各variantの1〜3回目を表します。GitHub Actionsの再実行回数とは別です。
+`sequence` is the overall execution order. `attempt` identifies the first, second, or third sample for that variant, not a GitHub Actions rerun attempt.
 
-この例は「変更前の1回目が有効で、2.226秒かかり、32テストすべて成功した」と読めます。`before`と`after`には各回の前後の条件確認、`coverageTotals`にはcoverage集計も保存されます。
+This record means the first baseline sample was valid, took 2.226 seconds, and passed all 32 tests. The file also contains `before` and `after` condition checks and `coverageTotals`.
 
-`exitCode: 0`や`jsonPresent: true`だけでは有効になりません。新しいレポートか、必要なテスト・coverage・時間が揃っているかも検証し、総合した結果が`valid`になります。
+Neither `exitCode: 0` nor `jsonPresent: true` alone establishes validity. The helper checks report freshness, required tests, coverage, and timing before setting `valid`.
 
-### vitest.json：テストとsnapshotの確認
+### vitest.json: tests and snapshots
 
-`1-baseline/vitest.json`の抜粋です。
+An excerpt from `1-baseline/vitest.json`:
 
 ```json
 {
@@ -165,13 +165,13 @@
 }
 ```
 
-32件すべて成功し、skipやtodoはなく、16個のsnapshotが一致しています。`added: 0`・`updated: 0`なので、この実行でsnapshotを追加・更新して成功させたものではありません。
+All 32 tests passed, with no skipped or todo tests, and all 16 snapshots matched. `added: 0` and `updated: 0` show that snapshots were not added or updated to make this run pass.
 
-個別テストは`testResults`内の`assertionResults`を確認します。主な項目は`fullName`（テスト名）、`status`（成否）、`failureMessages`（失敗理由）です。
+For individual tests, inspect `assertionResults` inside `testResults`. Key fields are `fullName` (test identity), `status` (result), and `failureMessages` (failure details).
 
-### coverage-summary.json：対象コードの確認
+### coverage-summary.json: code coverage
 
-`1-baseline/coverage/coverage-summary.json`の`total`から、主要4指標を抜粋しています。
+The four main metrics from `total` in `1-baseline/coverage/coverage-summary.json`:
 
 ```json
 {
@@ -204,19 +204,19 @@
 }
 ```
 
-`total`は対象数、`covered`は実行された数、`pct`は割合（%）です。たとえばbranchesは64分岐中48分岐、75%です。この例ではlines・statements・functionsが100%、branchesが75%で、設定された閾値を満たしています。
+`total` is the number of coverage items, `covered` is the number exercised, and `pct` is the percentage. For example, 48 of 64 branches were covered, giving 75%. Lines, statements, and functions reach 100%, while branches reach 75%, meeting the configured thresholds.
 
-実際のファイルにはソースファイルごとの集計も入ります。coverageが高いことだけで、バグがないとは判断できません。
+The actual file also contains per-source-file entries. High coverage alone does not establish that the implementation is free of defects.
 
-### stdout.txt / stderr.txt：エラーの詳細
+### stdout.txt / stderr.txt: execution diagnostics
 
-`stdout.txt`にはVitestのテスト一覧・集計など、`stderr.txt`には警告・エラーやCPU時間を取得するための情報が入ります。内容や色付けの制御文字は環境で異なります。
+`stdout.txt` contains Vitest test listings and summaries. `stderr.txt` can contain warnings, errors, and CPU timing information. Output and color-control sequences vary by environment.
 
-**`stderr.txt`が空でないだけでは失敗とは限りません。** まず`record.json`の`valid`と`reasons`を確認し、問題がある場合に該当回のログを読んでください。
+**A nonempty `stderr.txt` does not by itself indicate failure.** Start with `valid` and `reasons` in `record.json`, then inspect the relevant run's logs.
 
-## 4. 測定前に止まった場合
+## 4. Stopping before measurement
 
-次はNode.jsの指定版と異なる環境で止まった場合の説明用の例です。性能の測定結果ではありません。
+This illustrative example shows a Node.js version mismatch. It is not a performance measurement:
 
 ```json
 {
@@ -231,35 +231,35 @@
 }
 ```
 
-`validCount: 0`・`invalidCount: 0`は、測定が一度も始まっていない状態です。「6回すべて失敗した」という意味ではありません。保存先の`summary.json`で`fatalReasons`や`preflight`を確認します。
+`validCount: 0` and `invalidCount: 0` mean no measurement started, not that all six runs failed. Inspect `fatalReasons` and any available `preflight` details in `summary.json`.
 
-| 理由 | 確認すること |
+| Reason | What to check |
 |---|---|
-| `condition_mismatch: Node ...` | 指定のNode.js 24.19.0か |
-| `condition_mismatch: platform/architecture` | Linux x64で実行しているか |
-| `environment_error: npm version unavailable` | 実行環境からnpmを起動できるか |
-| `condition_mismatch: changed ...` | 指定ファイルに内容変更がないか |
+| `condition_mismatch: Node ...` | Whether Node.js is exactly 24.19.0 |
+| `condition_mismatch: platform/architecture` | Whether execution is on Linux x64 |
+| `environment_error: npm version unavailable` | Whether the process can launch npm |
+| `condition_mismatch: changed ...` | Whether the named file's contents changed |
 
-Windowsネイティブ環境での`measure`は対象外です。WindowsではWSL2などのLinux環境に指定のNode.js・npmを用意するか、GitHub Actionsを使ってください。LF/CRLFへの対応はWindowsでの性能測定対応とは別です。
+Native Windows execution of `measure` is unsupported. Use Linux, such as WSL2 with the required Node.js/npm versions, or GitHub Actions. LF/CRLF compatibility does not imply native Windows measurement support.
 
-測定を開始した後の無効結果は、`summary.json`の`records`または各回の`record.json`の`reasons`へ記録されます。全6回が有効でなければ比較は出しません。
+After measurement starts, invalid run reasons are saved in `summary.json` under `records` and in each `record.json`. No comparison is produced unless all six runs are valid.
 
-| 各回の理由の例 | 意味 |
+| Example reason | Meaning |
 |---|---|
-| `missing_test_json` | その回のテストレポートがない |
-| `stale_or_invalid_test_json: ...` | レポートの時刻がその実行区間に入っていない |
-| `test_id_mismatch` | 必要なテストの一覧と一致しない |
-| `snapshot_mismatch` | snapshotの一致条件を満たしていない |
-| `missing_coverage_summary` | coverage集計がない |
-| `missing_cpu_timing` | CPU時間を取得できなかった |
+| `missing_test_json` | No test report was produced for this run |
+| `stale_or_invalid_test_json: ...` | The report timestamp is outside this process's execution interval |
+| `test_id_mismatch` | Reported tests differ from the required identities |
+| `snapshot_mismatch` | Snapshot preservation conditions were not met |
+| `missing_coverage_summary` | Coverage summary is missing |
+| `missing_cpu_timing` | CPU timing could not be obtained |
 
-欠測を0秒で補ったり、無効な回を除いて成功した回だけで比較したりしないでください。
+Do not replace missing values with zero or discard invalid runs to compare only successful samples.
 
-## 5. 故障検出の確認：failure-check
+## 5. Defect detection: failure-check
 
-`npm run failure-check`は性能測定とは別に、正常・既知の実装故障・意図した環境エラーを両variantで確認します。出力先は`artifacts/failure-*/`です。
+`npm run failure-check` separately checks healthy execution, a known implementation defect, and a deliberate environment error for both variants. Results are saved under `artifacts/failure-*/`.
 
-画面には`passed`・`directory`・`reasons`・各ケースの判定・`restored`を要約して表示します。ファイル`failure-check.json`には期待した故障、全6ケース、復元した各ファイルの情報を保存します。以下はファイルから1ケースだけを抜粋した例です（実物の`records`は6件あります）。
+The console summarizes `passed`, `directory`, `reasons`, case classifications, and `restored`. The `failure-check.json` file includes the expected defect, all six cases, and per-file restoration details. This excerpt shows only one case; the actual `records` array contains six:
 
 ```json
 {
@@ -280,10 +280,10 @@ Windowsネイティブ環境での`measure`は対象外です。WindowsではWSL
 }
 ```
 
-このケースの`exitCode: 1`は、意図して入れた不具合をテストが検出したためです。指定テストが「期待値137、実値138」で失敗したことを確認できるので、検証ケース自体は`passed: true`です。
+Here, `exitCode: 1` is expected because the test detected the deliberately injected defect. The target test failed with expected value 137 and actual value 138, so the validation case itself has `passed: true`.
 
-環境エラーのケースは`classification: environment_error`・`expectedFailureDetected: false`になります。意図した起動エラーとして確認できれば、そのケースは`passed: true`です。任意の起動失敗を不具合検出の成功として扱うわけではありません。
+The environment-error case has `classification: environment_error` and `expectedFailureDetected: false`. Its case can still pass when the intended startup error is verified. Arbitrary startup failures are not treated as successful defect detection.
 
-ケース別の`record.json`・`vitest.json`・`stdout.txt`・`stderr.txt`は、たとえば`baseline/implementation_fault/`へ保存されます。意図的に起動できない環境エラーのケースでは`vitest.json`が作られないのが正常です。`implementation-fault.patch`には注入した差分、`failure-check.json`の`restoration`には元に戻した確認結果が入ります。
+Case-specific `record.json`, `vitest.json`, `stdout.txt`, and `stderr.txt` are stored under paths such as `baseline/implementation_fault/`. No `vitest.json` is expected for the deliberately unstartable environment-error case. `implementation-fault.patch` records the injected change, and `restoration` in `failure-check.json` records the checks after restoring the original files.
 
-GitHub Actionsから取得する場合の格納先は[CIの手順](ci-workflow.md)を参照してください。生成結果には実行環境のパスなどが含まれるため、共有時は必要な箇所を抜粋してください。
+See [CI instructions](ci-workflow.md) for artifact locations on GitHub Actions. Generated files contain environment paths; share only the relevant excerpts.

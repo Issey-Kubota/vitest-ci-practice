@@ -1,51 +1,53 @@
-# GitHub Actionsでの検証
+# Validation with GitHub Actions
 
-## 実行方法
+## Starting a run
 
-1. リポジトリをforkし、GitHub Actionsを有効にします。
-2. Actionsで **Vitest validation** を選択します。
-3. **Run workflow** で`main`を選びます。
-4. 完了後にjobのログとArtifactsを確認します。
+1. Fork the repository and enable GitHub Actions.
+2. Select **Vitest validation** under Actions.
+3. Choose **Run workflow** and select `main`.
+4. Review the job logs and download its artifacts.
 
-起動は`workflow_dispatch`による手動実行のみです。push・Pull Request・定期実行では起動しません。`main`以外や同じrunの再実行は受け付けないため、再度試す場合は新しいrunを開始してください。
+The workflow accepts manual `workflow_dispatch` events only. It does not run on pushes, pull requests, or a schedule. Other branches and reruns of an existing run are rejected; start a new run to try again.
 
-## 実行条件
+## Execution conditions
 
-Ubuntu 24.04 / Linux x64、単一job、上限15分です。Node.js 24.19.0、npm 11.9.0、Vitest / coverage-v8 5.0.1、Vite 8.3.0、TypeScript 5.9.2を使用します。依存は`npm ci`で復元します。
+The workflow uses Ubuntu 24.04 / Linux x64, a single job, and a 15-minute timeout. Versions are Node.js 24.19.0, npm 11.9.0, Vitest / coverage-v8 5.0.1, Vite 8.3.0, and TypeScript 5.9.2. Dependencies are restored with `npm ci`.
 
-Actionsは公式リポジトリのcommit SHAで固定し、権限は`contents: read`です。checkoutした認証情報は永続化せず、リポジトリへの書き戻しも行いません。
+Official actions are pinned to commit SHAs. Permissions are limited to `contents: read`; checkout credentials are not persisted, and the workflow does not write back to the repository.
 
-## 処理の流れ
+## Processing steps
 
-1. 実行ID、commit、runner情報を記録し、対象commitをcheckoutする。
-2. 実行前の追跡ファイルのハッシュを保存する。
-3. Node.js・npmを準備し、依存を取得して版を照合する。
-4. `verify:manifest`で計測前のテストを固定基準と照合する。
-5. `measure`でbaseline/candidateを交互に各3回計測し、開始時のテストへ復元する。
-6. `failure-check`で正常・既知の不具合・環境エラーを確認し、実装とテストを復元する。
-7. 補助スクリプトの回帰テストを実行する。模擬結果を含み、追加の性能測定ではない。
-8. `verify:manifest`で処理後のテストを再照合する。
-9. 追跡ファイルのハッシュと保護対象のファイル一覧を実行前と比較し、今回生成した出力をartifactへ保存する。
+1. Record the run ID, commit, and runner information; check out the target commit.
+2. Save hashes of tracked files before execution.
+3. Prepare Node.js/npm, install dependencies, and verify versions.
+4. Run `verify:manifest` to check tests against the fixed reference.
+5. Run `measure`: alternate baseline/candidate three times each, then restore the starting tests.
+6. Run `failure-check`: check healthy execution, a known defect, and an environment error; restore source and tests.
+7. Run helper regression tests, including simulated cases. These are not additional performance measurements.
+8. Run `verify:manifest` again after restoration.
+9. Compare tracked-file hashes and protected-file inventories, then upload newly generated output as an artifact.
 
-予期しないエラーは失敗として扱います。前段の失敗で通常の後続stepはスキップされますが、復元状態の記録とartifact保存は成否にかかわらず試みます。runnerの消失などでは保存できないこともあります。
+Unexpected errors fail the job. Normal downstream steps are skipped after failure, while integrity recording and artifact upload are attempted regardless of the result. Runner loss or forced termination can prevent collection.
 
-## 出力の確認
+## Inspecting output
 
-artifactの保存期間は30日です。必要な結果は実行ページからダウンロードしてください。
+Artifacts are retained for 30 days. Download any results you need from the run page.
 
-| ファイル | 確認すること |
+| File | What to inspect |
 |---|---|
-| `run-context.json` | 実行ID・対象commit・OS・CPU・メモリー・キャッシュ条件 |
-| `versions.json` | 指定版と実際の版の一致 |
-| `integrity.json` | 実行前後の追跡ファイルの一致 |
-| `new-artifacts/measure-*/summary.json` | 各回の有効性、時間、比較、テストの復元 |
-| `new-artifacts/failure-*/failure-check.json` | 不具合の検出と実装・テストの復元 |
-| 各コマンドのログ | エラーの詳細と補助テストの結果 |
+| `run-context.json` | Run ID, target commit, OS, CPU, memory, and cache conditions |
+| `versions.json` | Expected and observed versions |
+| `integrity.json` | Tracked-file integrity before and after execution |
+| `new-artifacts/measure-*/summary.json` | Run validity, timings, comparison, and test restoration |
+| `new-artifacts/failure-*/failure-check.json` | Defect detection and source/test restoration |
+| Command logs | Error details and helper test results |
 
-## 測定上の注意
+See [Output examples and interpretation](output-guide.md) for example contents.
 
-Actionsの依存キャッシュは使わず、npmキャッシュは空のディレクトリから開始します。Node.jsのtoolcache利用有無はsetupログで確認できます。依存インストールは測定区間に含めません。
+## Measurement limitations
 
-各回でViteキャッシュを削除し、Node compile cacheを無効にしますが、OS page cacheやホスト負荷は制御しません。同じrunnerラベルでも同一ハードウェアとは限りません。CPU時間とrunner占有・課金時間も異なります。
+Actions dependency caching is disabled, and npm starts with an empty cache directory. Check the setup log to see whether Node.js came from the runner tool cache. Dependency installation is outside the measured intervals.
 
-測定JSONの`evidenceKind: real-vitest-local`は実プロセスを起動するhelperの固定ラベルです。CIで実行されたかは`run-context.json`とGitHubの実行ページを合わせて確認してください。
+The Vite cache is cleared for each run and the Node compile cache is disabled. OS page caches and host load are not controlled. The same runner label does not guarantee identical hardware. CPU time is also distinct from runner occupancy and billable time.
+
+The measurement helper uses the fixed label `evidenceKind: real-vitest-local` for actual child-process execution, including CI. Use `run-context.json` and the GitHub run page to establish where execution took place.
