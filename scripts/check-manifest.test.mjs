@@ -1,3 +1,4 @@
+// Guard against relaxed baselines, changed expectations and incomplete test inventories.
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { mkdtemp, mkdir, readFile, writeFile, rm, copyFile, unlink } from 'node:fs/promises'
@@ -11,6 +12,12 @@ const source = fileURLToPath(new URL('..', import.meta.url))
 const referenceBytes = await readFile(join(source, 'reference/baseline-tests.json'))
 const reference = JSON.parse(referenceBytes)
 
+/**
+ * Create an isolated test tree and register automatic cleanup.
+ * @param {import("node:test").TestContext} t - Context used to register cleanup.
+ * @param {string} variant - Import variant; defaults to baseline.
+ * @returns {Promise<string>} Temporary sample root.
+ */
 async function fixture(t, variant = 'baseline') {
   const root = await mkdtemp(join(tmpdir(), 'p29-manifest-'))
   t.after(() => rm(root, { recursive: true, force: true }))

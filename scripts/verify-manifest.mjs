@@ -3,10 +3,21 @@ import { createHash } from 'node:crypto'
 import { resolve, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
-// Captured from the original delivered ZIP. Verification must never recreate it.
-const referenceDigest = '63dc0df35db8f7fbffcc925b6d274dc564a6a8fbe26759607ac6be05c11f841e'
+// Pin the reviewed reference bytes; verification must never regenerate its own baseline.
+const referenceDigest = '7ce2fe616479a410958005cde31799de0315139da2f104bede67bcd886c19f61'
+/**
+ * Hash reference or test contents without modifying them.
+ * @param {string | Buffer} value - Content to fingerprint.
+ * @returns {string} Hexadecimal SHA-256 digest.
+ */
 const hash = value => createHash('sha256').update(value).digest('hex')
 
+/**
+ * Recursively inventory tests, including unexpected files and symlinks.
+ * @param {string} directory - Directory to inspect.
+ * @param {string} prefix - Relative path prefix; defaults to empty.
+ * @returns {Promise<Array<{path: string, regular: boolean}>>} Sorted entries for exact inventory comparison.
+ */
 async function listFiles(directory, prefix = '') {
   const found = []
   for (const entry of await readdir(directory, { withFileTypes: true })) {
@@ -21,7 +32,11 @@ async function listFiles(directory, prefix = '') {
   return found.sort((a, b) => a.path.localeCompare(b.path))
 }
 
-/** Verify this fixture's test contents against the saved, immutable baseline. */
+/**
+ * Check test bytes and inventory against the pinned baseline; never run or rewrite tests.
+ * @param {URL | string} root - Sample root; defaults to the parent of this script.
+ * @returns {Promise<object>} Validity, reasons, detected variant, file hashes, test IDs and assertion/snapshot counts.
+ */
 export async function verifyManifest(root = new URL('..', import.meta.url)) {
   const directory = root instanceof URL ? fileURLToPath(root) : resolve(root)
   const reasons = []
@@ -69,10 +84,12 @@ export async function verifyManifest(root = new URL('..', import.meta.url)) {
       continue
     }
     const baseline = Buffer.from(entry.baselineContent)
+    // Accept only the designated import substitution; all other bytes must match.
     const candidate = Buffer.from(entry.baselineContent.replace(entry.baselineImport, entry.candidateImport))
     const variant = bytes.equals(baseline) ? 'baseline' : bytes.equals(candidate) ? 'candidate' : null
     if (variant === null) reasons.push(`unauthorized_test_change: ${entry.path}: only its exact designated import target may change`)
     else variants.add(variant)
+    // Parse the fixed, controlled fixture format, not arbitrary user test syntax.
     const suite = [...entry.baselineContent.matchAll(/describe\('([^']+)'/g)].map(match => match[1])
     const testIds = [...entry.baselineContent.matchAll(/it\('([^']+)'/g)].map(match => `${entry.path}::${suite.join(' > ')}::${match[1]}`)
     const assertions = [...entry.baselineContent.matchAll(/expect\(/g)].length

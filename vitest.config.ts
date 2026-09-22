@@ -3,6 +3,7 @@ import { defineConfig } from 'vitest/config'
 export default defineConfig({
   test: {
     environment: 'node',
+    // Keep worker isolation and parallelism identical across import variants.
     pool: 'forks',
     isolate: true,
     fileParallelism: true,
@@ -11,11 +12,13 @@ export default defineConfig({
     include: ['tests/**/*.test.ts'],
     coverage: {
       provider: 'v8',
+      // Measure the same tested features even when the barrel loads other modules.
       include: Array.from({ length: 16 }, (_, i) =>
         `src/features/feature-${String(i + 1).padStart(2, '0')}.ts`
       ),
       exclude: ['src/features/index.ts'],
       reporter: ['text', 'json-summary'],
+      // Preserve the quality floor while comparing import costs.
       thresholds: {
         lines: 95,
         functions: 95,

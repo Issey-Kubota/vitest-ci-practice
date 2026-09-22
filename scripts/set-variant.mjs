@@ -1,3 +1,5 @@
+// Switch only the import path; expectations and snapshots stay identical.
+// This CLI persists the selected variant. Use measure for automatic restoration.
 import { readFile, writeFile } from 'node:fs/promises'
 
 const variant = process.argv[2]

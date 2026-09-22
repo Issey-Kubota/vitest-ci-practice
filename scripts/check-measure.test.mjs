@@ -1,3 +1,4 @@
+// Verify missing, stale and partial outputs cannot become successful measurements.
 // Regression fixtures simulate output faults only. They are never performance observations.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
@@ -17,7 +18,16 @@ const fixtureRoot = '/fixture'
 const cov = { total: { lines: { total:64, covered:64, pct:100, skipped:0 }, statements:{total:96,covered:96,pct:100,skipped:0}, functions:{total:64,covered:64,pct:100,skipped:0}, branches:{total:64,covered:48,pct:75,skipped:0} } }
 for (let i = 1; i <= 16; i++) cov[`${fixtureRoot}/src/features/feature-${String(i).padStart(2, '0')}.ts`] = {}
 const processResult = { code:0, signal:null, spawnError:null, startedAt:Date.now()-1, endedAt:Date.now()+1, stdout:'Duration 2.0s (import 50%)', stderr:'__P29_CPU_USER=1.0 __P29_CPU_SYSTEM=0.5', wallMs:2 }
+/**
+ * Clone the synthetic report with a timestamp inside the process interval.
+ * @returns {object} Independent report suitable for mutation in a test.
+ */
 const freshReport = () => ({ ...structuredClone(old), startTime:processResult.startedAt })
+/**
+ * Copy the fixed sample into a sandbox and create a stale-result sentinel.
+ * @param {string} label - Name used to record the temporary fixture location.
+ * @returns {Promise<string>} Temporary root with dependencies linked from the sample.
+ */
 async function fixture(label) {
   const dir = await mkdtemp(join(tmpdir(), 'p29-measure-'))
   for (const name of ['scripts', 'reference', 'tests', 'src', 'package.json', 'package-lock.json', 'vitest.config.ts']) await cp(join(root,name),join(dir,name),{recursive:true})
@@ -27,9 +37,20 @@ async function fixture(label) {
   await writeFile(join(evidence,`${label}-fixture.txt`),dir+'\n')
   return dir
 }
+/**
+ * Select the measurement fields needed in regression evidence.
+ * @param {object} result - Measurement return value.
+ * @returns {object} Exit code, summary and output path.
+ */
 function brief(result) {
   return { exitCode:result.exitCode,summary:result.summary,output:result.output }
 }
+/**
+ * Save a regression summary and copy its output for inspection.
+ * @param {string} label - Evidence filename prefix.
+ * @param {object} result - Measurement result containing the output directory.
+ * @returns {Promise<void>} Resolves after the evidence is saved.
+ */
 async function preserve(label,result) {
   await writeFile(join(evidence,label+'.json'),JSON.stringify(brief(result),null,2))
   await cp(result.output,join(evidence,label+'-outputs'),{recursive:true})

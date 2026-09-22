@@ -1,3 +1,4 @@
+// Public barrel for the sample: importing it evaluates all catalogue modules.
 export * from './feature-01.js'
 export * from './feature-02.js'
 export * from './feature-03.js'

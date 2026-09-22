@@ -1,4 +1,4 @@
-// Fixed P29 fixture only; timings and test results come from official Vitest reporters.
+// Measure this fixed sample using Vitest reports and process-level timing.
 import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises'
 import { spawn, execFileSync } from 'node:child_process'
 import { performance } from 'node:perf_hooks'
@@ -9,11 +9,28 @@ import os from 'node:os'
 import { verifyManifest } from './verify-manifest.mjs'
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url))
-const CONDITIONS_HASH = '1a3cfd129d7474591f46e2717f1500c4db8efa226daca7a36a836e27754b3a4c'
+const CONDITIONS_HASH = 'd5f6bde80f15b39d82623e15ceb1902226c3fa17dce636b83c5f9affcc31aa36'
 const ORDER = ['baseline', 'candidate', 'baseline', 'candidate', 'baseline', 'candidate']
+/**
+ * Fingerprint a protected input.
+ * @param {string | Buffer} data - Input bytes or text.
+ * @returns {string} Hexadecimal SHA-256 digest.
+ */
 const sha256 = data => createHash('sha256').update(data).digest('hex')
+/**
+ * Select the middle value; callers supply three samples per variant.
+ * @param {number[]} xs - Nonempty odd-length sample set; the input is not mutated.
+ * @returns {number} Middle sorted value (upper middle for even-length input).
+ */
 const median = xs => [...xs].sort((a, b) => a - b)[Math.floor(xs.length / 2)]
 
+/**
+ * Collect a child process result, preserving startup errors and termination signals.
+ * @param {string} command - Executable to launch.
+ * @param {string[]} args - Executable arguments.
+ * @param {import("node:child_process").SpawnOptions} options - Working directory and environment; stdout/stderr must be piped.
+ * @returns {Promise<object>} Exit status, signal, error, output, epoch timestamps and monotonic wall time in ms.
+ */
 export async function runProcess(command, args, options) {
   const startedAt = Date.now(), started = performance.now()
   return new Promise(resolve => {
@@ -26,6 +43,12 @@ export async function runProcess(command, args, options) {
   })
 }
 
+/**
+ * List all source paths recursively for exact inventory matching.
+ * @param {string} path - Directory to inspect.
+ * @param {string} prefix - Relative prefix; defaults to empty.
+ * @returns {Promise<string[]>} Sorted relative paths.
+ */
 async function fileSet(path, prefix = '') {
   const files = []
   for (const entry of await readdir(path, { withFileTypes: true })) {
@@ -36,6 +59,13 @@ async function fileSet(path, prefix = '') {
   return files.sort()
 }
 
+/**
+ * Check runtime versions, protected bytes, source inventory and test variant.
+ * @param {string} root - Sample root directory.
+ * @param {object} fixed - Pinned measurement conditions.
+ * @param {string | null} variant - Required import variant, or null to accept either consistent variant.
+ * @returns {Promise<object>} Validity, reasons, observed environment and manifest result.
+ */
 export async function checkConditions(root, fixed, variant = null) {
   const reasons = [], observed = { node: process.version, platform: process.platform, arch: process.arch, packages: {} }
   if (observed.node !== fixed.versions.node) reasons.push(`condition_mismatch: Node ${observed.node}; expected ${fixed.versions.node}`)
@@ -64,6 +94,15 @@ export async function checkConditions(root, fixed, variant = null) {
   return { valid: reasons.length === 0, reasons, observed, manifest }
 }
 
+/**
+ * Require fresh, complete test/coverage reports and usable timing before accepting a run.
+ * @param {object} result - Process exit, output and timing record.
+ * @param {object | null} json - Parsed Vitest report, or null when unavailable.
+ * @param {object | null} coverage - Coverage summary, or null when unavailable.
+ * @param {object} manifest - Manifest validity result.
+ * @param {string} root - Root used to normalize reported file paths.
+ * @returns {object} Validity, distinct rejection reasons, CPU milliseconds and Vitest duration text.
+ */
 export function validateOutputs(result, json, coverage, manifest, root) {
   const reasons = []
   if (result.spawnError) reasons.push(`startup_error: ${result.spawnError}`)
@@ -71,12 +110,14 @@ export function validateOutputs(result, json, coverage, manifest, root) {
   if (result.code !== 0) reasons.push(`process_exit: ${result.code}`)
   if (!json) reasons.push('missing_test_json')
   else {
+    // A successful old report must never stand in for output from this process.
     if (!Number.isFinite(json.startTime) || json.startTime < result.startedAt || json.startTime > result.endedAt) reasons.push('stale_or_invalid_test_json: startTime outside process interval')
     if (json.success !== true || json.numTotalTests !== 32 || json.numPassedTests !== 32 || json.numFailedTests !== 0 || json.numPendingTests !== 0 || json.numTodoTests !== 0) reasons.push('test_result_mismatch: expected 32 passed, zero failed/skipped/todo')
     const expected = Array.from({ length: 16 }, (_, i) => {
       const id = String(i + 1).padStart(2, '0')
       return [`tests/feature-${id}.test.ts|feature-${id} round-trips a catalogue key`, `tests/feature-${id}.test.ts|feature-${id} returns -1 for an unknown key`]
     }).flat().sort()
+    // Compare exact file/test identities, not just the number of passing tests.
     const actual = []
     for (const suite of json.testResults ?? []) {
       if (suite.status !== 'passed' || suite.message) reasons.push('test_suite_error')
@@ -108,6 +149,12 @@ export function validateOutputs(result, json, coverage, manifest, root) {
   return { valid: reasons.length === 0, reasons: [...new Set(reasons)], totalRunnerCpuMs, vitestDurationLine }
 }
 
+/**
+ * Run six interleaved comparisons, preserve evidence and restore the original tests.
+ * @param {string} root - Sample root; defaults to this repository.
+ * @param {Function} runner - Async process runner; defaults to real execution and supports regression injection.
+ * @returns {Promise<object>} Output directory, complete summary and exitCode (0 only for a valid restored batch).
+ */
 export async function measure(root = ROOT, runner = runProcess) {
   await mkdir(join(root, 'artifacts'), { recursive: true })
   const output = await mkdtemp(join(root, 'artifacts', 'measure-'))
@@ -127,6 +174,7 @@ export async function measure(root = ROOT, runner = runProcess) {
       const name = `tests/feature-${String(i).padStart(2, '0')}.test.ts`
       originalTests.set(name, await readFile(join(root, name)))
     }
+    // Interleave variants to limit ordering bias; retain every failed attempt.
     for (const [index, variant] of ORDER.entries()) {
       const runDirectory = join(output, `${index + 1}-${variant}`)
       await mkdir(runDirectory)
@@ -146,6 +194,7 @@ export async function measure(root = ROOT, runner = runProcess) {
         const env = { ...process.env, CI: 'true', TZ: 'UTC', NODE_DISABLE_COMPILE_CACHE: '1', NODE_OPTIONS: '' }
         delete env.NODE_COMPILE_CACHE
         record.command = [process.execPath, ...args]
+        // Bash time includes child CPU usage; wall time is measured separately.
         const result = await runner('bash', ['-c', 'TIMEFORMAT="__P29_CPU_USER=%U __P29_CPU_SYSTEM=%S"; time "$@"', 'p29-time', process.execPath, ...args], { cwd: root, env })
         record.process = { startedAt: result.startedAt, endedAt: result.endedAt, signal: result.signal, spawnError: result.spawnError }
         record.exitCode = result.code
@@ -172,6 +221,7 @@ export async function measure(root = ROOT, runner = runProcess) {
     }
   } catch (e) { summary.fatalReasons.push(e.message) }
   finally {
+    // Restore saved bytes even after failures, then verify the restoration itself.
     try {
       for (const [name, bytes] of originalTests) await writeFile(join(root, name), bytes)
       for (const [name, bytes] of originalTests) if (!(await readFile(join(root, name))).equals(bytes)) throw new Error(`restoration mismatch: ${name}`)
@@ -180,6 +230,7 @@ export async function measure(root = ROOT, runner = runProcess) {
     summary.validCount = summary.records.filter(r => r.valid).length
     summary.invalidCount = summary.records.filter(r => !r.valid).length
     summary.complete = summary.validCount === 6 && summary.invalidCount === 0 && summary.fatalReasons.length === 0 && summary.restoration.restored
+    // Simulated regression outputs must never produce a performance comparison.
     if (summary.complete && summary.evidenceKind === 'real-vitest-local') {
       summary.comparison = Object.fromEntries(['baseline', 'candidate'].map(variant => {
         const rows = summary.records.filter(r => r.valid && r.variant === variant)

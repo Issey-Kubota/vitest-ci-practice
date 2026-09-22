@@ -9,10 +9,33 @@ export const TARGET_ID = 'feature-01 round-trips a catalogue key'
 export const UNKNOWN_ID = 'feature-01 returns -1 for an unknown key'
 const sourceLine = 'export function lookup01(value: string): number { return index.get(value) ?? -1 }'
 const faultyLine = 'export function lookup01(value: string): number { const row = index.get(value); return row === undefined ? -1 : row + 1 }'
+/**
+ * Fingerprint bytes to verify exact restoration.
+ * @param {Buffer} bytes - Original or restored file bytes.
+ * @returns {string} Hexadecimal SHA-256 digest.
+ */
 const hash = bytes => createHash('sha256').update(bytes).digest('hex')
+/**
+ * Remove ANSI color sequences before matching diagnostic text.
+ * @param {string} text - Potentially colored output.
+ * @returns {string} Text without supported ANSI color escapes.
+ */
 const plain = text => text.replace(/\u001b\[[0-9;]*m/g, '')
 
 // This recognises one known implementation fault. Nonzero exit alone is never evidence.
+/**
+ * Distinguish healthy execution, the exact injected defect, environment errors and unrelated failures.
+ * @param {object} run - Process and reporter evidence.
+ * @param {number | null} run.code - Child exit code.
+ * @param {string | null} run.signal - Termination signal.
+ * @param {string | null} run.spawnError - Startup error.
+ * @param {object | null} run.report - Parsed Vitest report.
+ * @param {string | null} run.reportError - Report read/parse error.
+ * @param {number} run.startedMs - Process start epoch milliseconds.
+ * @param {number} run.endedMs - Process end epoch milliseconds.
+ * @param {string} run.output - Combined output; defaults to empty.
+ * @returns {object} Classification, detection flag, reasons and available target failure details.
+ */
 export function classifyRun({ code, signal, spawnError, report, reportError, startedMs, endedMs, output = '' }) {
   const reasons = []
   if (spawnError) reasons.push(`spawn_error: ${spawnError}`)
@@ -20,6 +43,7 @@ export function classifyRun({ code, signal, spawnError, report, reportError, sta
   if (reportError) reasons.push(reportError)
   if (!report || typeof report !== 'object' || !Array.isArray(report.testResults)) reasons.push('missing_or_invalid_report')
   if (reasons.length) return { classification: 'environment_error', expectedFailureDetected: false, reasons }
+  // Validate the report shape before trusting nested test and failure fields.
   const validSchema = typeof report.success === 'boolean' && ['numTotalTests', 'numPassedTests', 'numFailedTests', 'numPendingTests', 'numTodoTests'].every(key => Number.isInteger(report[key]) && report[key] >= 0) && report.testResults.every(result => result && typeof result.name === 'string' && Array.isArray(result.assertionResults) && result.assertionResults.every(test => test && typeof test.fullName === 'string' && Array.isArray(test.failureMessages) && test.failureMessages.every(message => typeof message === 'string')))
   if (!validSchema) return { classification: 'environment_error', expectedFailureDetected: false, reasons: ['invalid_report_schema'] }
   if (!Number.isFinite(report.startTime) || report.startTime < startedMs || report.startTime > endedMs) reasons.push('report_start_time_outside_this_run')
@@ -37,11 +61,19 @@ export function classifyRun({ code, signal, spawnError, report, reportError, sta
   const failureMessages = target.failureMessages.map(plain)
   const healthy = code === 0 && report.success === true && report.numFailedTests === 0 && report.numPassedTests === 2 && report.testResults[0].status === 'passed' && assertions.every(test => test.status === 'passed' && test.failureMessages.length === 0)
   if (healthy) return { classification: 'healthy', expectedFailureDetected: false, reasons: [], targetTestId: TARGET_ID, failureMessages: [] }
+  // Only this exact assertion mismatch proves detection of the injected fault.
   const detected = code === 1 && report.success === false && report.numFailedTests === 1 && report.numPassedTests === 1 && report.testResults[0].status === 'failed' && target.status === 'failed' && unknown.status === 'passed' && unknown.failureMessages.length === 0 && failureMessages.length === 1 && /AssertionError: expected 138 to be 137 \/\/ Object\.is equality/.test(failureMessages[0])
   if (detected) return { classification: 'implementation_fault_detected', expectedFailureDetected: true, reasons: [], targetTestId: TARGET_ID, failureMessages }
   return { classification: 'unexpected_test_failure', expectedFailureDetected: false, reasons: ['exit_status_or_assertion_failure_did_not_match_the_known_fault'], targetTestId: TARGET_ID, failureMessages }
 }
 
+/**
+ * Run the targeted test without coverage and persist raw output plus its classification.
+ * @param {string} root - Sample working directory.
+ * @param {string} directory - New case output directory.
+ * @param {string} entry - Vitest entry path or deliberately missing path.
+ * @returns {Promise<object>} Classified record and combined output.
+ */
 async function execute(root, directory, entry) {
   await mkdir(directory, { recursive: false })
   const reportPath = join(directory, 'vitest.json')
@@ -69,6 +101,11 @@ async function execute(root, directory, entry) {
   return { record, output: result.stdout + result.stderr }
 }
 
+/**
+ * Exercise healthy, faulty and missing-runner cases for both import variants, then restore files.
+ * @param {string} root - Sample directory, resolved before execution.
+ * @returns {Promise<object>} Case records, version checks, failure reasons and byte-restoration results.
+ */
 export async function runFailureCheck(root) {
   root = resolve(root)
   const directory = join(root, 'artifacts', `failure-${randomUUID()}`)
@@ -89,7 +126,8 @@ export async function runFailureCheck(root) {
     if (originalSource.split(sourceLine).length !== 2) throw new Error('known_implementation_line_missing_or_duplicated')
     const tests = (await readdir(join(root, 'tests'))).filter(name => /^feature-\d{2}\.test\.ts$/.test(name)).sort()
     for (const name of tests) originals.set(join(root, 'tests', name), await readFile(join(root, 'tests', name)))
-    await writeFile(join(directory, 'implementation-fault.patch'), `--- a/src/features/feature-01.ts\n+++ b/src/features/feature-01.ts\n@@ -4 +4 @@\n-${sourceLine}\n+${faultyLine}\n`)
+    await writeFile(join(directory, 'implementation-fault.patch'), `--- a/src/features/feature-01.ts\n+++ b/src/features/feature-01.ts\n@@ -14 +14 @@\n-${sourceLine}\n+${faultyLine}\n`)
+    // Keep expectations intact: inject a source defect, then restore between cases.
     for (const variant of ['baseline', 'candidate']) {
       const variantDirectory = join(directory, variant)
       await mkdir(variantDirectory)
@@ -115,6 +153,7 @@ export async function runFailureCheck(root) {
   } catch (error) {
     summary.reasons.push(`${error.code ?? error.name}: ${error.message}`)
   } finally {
+    // Cleanup must restore both source and tests, including on partial failure.
     for (const [path, bytes] of originals) {
       try {
         await writeFile(path, bytes)

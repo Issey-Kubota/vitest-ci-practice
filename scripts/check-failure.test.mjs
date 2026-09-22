@@ -1,8 +1,14 @@
+// Ensure only the intended source defect counts as successful fault detection.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { classifyRun, TARGET_ID, UNKNOWN_ID } from './failure-check.mjs'
 
 // Synthetic reporter fixtures test the checker, not application performance.
+/**
+ * Build isolated synthetic evidence for the failure classifier.
+ * @param {boolean} fault - Whether to model the known assertion failure; defaults to false.
+ * @returns {object} Fresh mutable process/report fixture.
+ */
 function fixture(fault = false) {
   return {
     code: fault ? 1 : 0, signal: null, spawnError: null,
