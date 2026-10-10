@@ -1,7 +1,8 @@
 import { normalizeTextBytes } from './normalize-text.mjs'
 // Measure this fixed sample using Vitest reports and process-level timing.
 import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises'
-import { spawn, execFileSync } from 'node:child_process'
+import { spawn } from 'node:child_process'
+import { checkEnvironment, measurementCommand, selectTiming } from './environment.mjs'
 import { performance } from 'node:perf_hooks'
 import { createHash } from 'node:crypto'
 import { fileURLToPath, pathToFileURL } from 'node:url'
@@ -10,7 +11,7 @@ import os from 'node:os'
 import { verifyManifest } from './verify-manifest.mjs'
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url))
-const CONDITIONS_HASH = 'd5f6bde80f15b39d82623e15ceb1902226c3fa17dce636b83c5f9affcc31aa36'
+const CONDITIONS_HASH = '8fa5232c8170cdaa633634b353bcd1022068a06e79f1379b4e15bc291d203cee'
 const ORDER = ['baseline', 'candidate', 'baseline', 'candidate', 'baseline', 'candidate']
 /**
  * Fingerprint a protected text input after CRLF normalization.
@@ -68,19 +69,7 @@ async function fileSet(path, prefix = '') {
  * @returns {Promise<object>} Validity, reasons, observed environment and manifest result.
  */
 export async function checkConditions(root, fixed, variant = null) {
-  const reasons = [], observed = { node: process.version, platform: process.platform, arch: process.arch, packages: {} }
-  if (observed.node !== fixed.versions.node) reasons.push(`condition_mismatch: Node ${observed.node}; expected ${fixed.versions.node}`)
-  if (observed.platform !== fixed.platform || observed.arch !== fixed.arch) reasons.push('condition_mismatch: platform/architecture')
-  try {
-    observed.npm = execFileSync('npm', ['--version'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim()
-    if (observed.npm !== fixed.versions.npm) reasons.push(`condition_mismatch: npm ${observed.npm}`)
-  } catch (e) { reasons.push(`environment_error: npm version unavailable: ${e.code ?? e.message}`) }
-  for (const name of ['vitest', 'vite', 'typescript', '@vitest/coverage-v8']) {
-    try {
-      observed.packages[name] = JSON.parse(await readFile(join(root, 'node_modules', name, 'package.json'), 'utf8')).version
-      if (observed.packages[name] !== fixed.versions[name]) reasons.push(`condition_mismatch: ${name} ${observed.packages[name]}`)
-    } catch (e) { reasons.push(`environment_error: ${name} unavailable: ${e.code ?? e.message}`) }
-  }
+  const { reasons, warnings, observed } = await checkEnvironment(root, fixed)
   for (const [name, expected] of Object.entries(fixed.files)) {
     try { if (sha256(await readFile(join(root, name))) !== expected) reasons.push(`condition_mismatch: changed ${name}`) }
     catch (e) { reasons.push(`condition_mismatch: missing ${name}: ${e.code ?? e.message}`) }
@@ -92,7 +81,7 @@ export async function checkConditions(root, fixed, variant = null) {
   const manifest = await verifyManifest(root)
   if (!manifest.valid) reasons.push(...manifest.reasons.map(r => `condition_mismatch: manifest ${r}`))
   if (variant && manifest.variant !== variant) reasons.push(`condition_mismatch: expected ${variant} imports, got ${manifest.variant}`)
-  return { valid: reasons.length === 0, reasons, observed, manifest }
+  return { valid: reasons.length === 0, reasons, warnings, observed, manifest }
 }
 
 /**
@@ -102,9 +91,10 @@ export async function checkConditions(root, fixed, variant = null) {
  * @param {object | null} coverage - Coverage summary, or null when unavailable.
  * @param {object} manifest - Manifest validity result.
  * @param {string} root - Root used to normalize reported file paths.
+ * @param {boolean} requireCpu - Reject missing CPU timing only when the selected backend provides it.
  * @returns {object} Validity, distinct rejection reasons, CPU milliseconds and Vitest duration text.
  */
-export function validateOutputs(result, json, coverage, manifest, root) {
+export function validateOutputs(result, json, coverage, manifest, root, requireCpu = true) {
   const reasons = []
   if (result.spawnError) reasons.push(`startup_error: ${result.spawnError}`)
   if (result.signal) reasons.push(`process_signal: ${result.signal}`)
@@ -123,7 +113,7 @@ export function validateOutputs(result, json, coverage, manifest, root) {
     for (const suite of json.testResults ?? []) {
       if (suite.status !== 'passed' || suite.message) reasons.push('test_suite_error')
       for (const a of suite.assertionResults ?? []) {
-        actual.push(`${relative(root, suite.name)}|${a.fullName}`)
+        actual.push(`${relative(root, suite.name).replaceAll('\\', '/')}|${a.fullName}`)
         if (a.status !== 'passed' || a.failureMessages?.length) reasons.push(`test_status_error: ${a.fullName}`)
       }
     }
@@ -135,7 +125,7 @@ export function validateOutputs(result, json, coverage, manifest, root) {
   if (!coverage) reasons.push('missing_coverage_summary')
   else {
     const expected = Array.from({ length: 16 }, (_, i) => `src/features/feature-${String(i + 1).padStart(2, '0')}.ts`).sort()
-    const paths = Object.keys(coverage).filter(k => k !== 'total').map(k => relative(root, k)).sort()
+    const paths = Object.keys(coverage).filter(k => k !== 'total').map(k => relative(root, k).replaceAll('\\', '/')).sort()
     if (JSON.stringify(paths) !== JSON.stringify(expected)) reasons.push('coverage_target_mismatch')
     for (const [key, [total, covered, pct]] of Object.entries({ lines: [64, 64, 100], statements: [96, 96, 100], functions: [64, 64, 100], branches: [64, 48, 75] })) {
       const got = coverage.total?.[key]
@@ -145,7 +135,7 @@ export function validateOutputs(result, json, coverage, manifest, root) {
   const match = result.stderr.match(/__P29_CPU_USER=([0-9.]+) __P29_CPU_SYSTEM=([0-9.]+)/)
   const totalRunnerCpuMs = match ? Math.round((Number(match[1]) + Number(match[2])) * 1000) : null
   const vitestDurationLine = result.stdout.match(/Duration\s+([^\n]+)/)?.[1]?.trim() ?? null
-  if (totalRunnerCpuMs === null) reasons.push('missing_cpu_timing')
+  if (requireCpu && totalRunnerCpuMs === null) reasons.push('missing_cpu_timing')
   if (!vitestDurationLine) reasons.push('missing_vitest_duration')
   return { valid: reasons.length === 0, reasons: [...new Set(reasons)], totalRunnerCpuMs, vitestDurationLine }
 }
@@ -154,12 +144,13 @@ export function validateOutputs(result, json, coverage, manifest, root) {
  * Run six interleaved comparisons, preserve evidence and restore the original tests.
  * @param {string} root - Sample root; defaults to this repository.
  * @param {Function} runner - Async process runner; defaults to real execution and supports regression injection.
+ * @param {object} options - Optional timing backend override for regression tests.
  * @returns {Promise<object>} Output directory, complete summary and exitCode (0 only for a valid restored batch).
  */
-export async function measure(root = ROOT, runner = runProcess) {
+export async function measure(root = ROOT, runner = runProcess, options = {}) {
   await mkdir(join(root, 'artifacts'), { recursive: true })
   const output = await mkdtemp(join(root, 'artifacts', 'measure-'))
-  const summary = { schemaVersion: 2, helperVersion: 'p29-review-1', evidenceKind: runner === runProcess ? 'real-vitest-local' : 'regression-harness-not-performance', startedAt: new Date().toISOString(), records: [], validCount: 0, invalidCount: 0, comparison: null, complete: false, fatalReasons: [], restoration: null }
+  const summary = { schemaVersion: 3, helperVersion: 'portable-runtime-1', evidenceKind: runner === runProcess ? 'real-vitest-local' : 'regression-harness-not-performance', startedAt: new Date().toISOString(), records: [], validCount: 0, invalidCount: 0, comparison: null, complete: false, fatalReasons: [], warnings: [], restoration: null }
   const originalTests = new Map()
   try {
     const reference = await readFile(join(root, 'reference/measurement-conditions.json'))
@@ -170,6 +161,9 @@ export async function measure(root = ROOT, runner = runProcess) {
     summary.cache = { clearedBeforeEveryRun: ['node_modules/.vite'], nodeCompileCache: 'disabled', osPageCache: 'not flushed', npmCache: 'outside measurement', processMode: 'new Vitest process each run' }
     const first = await checkConditions(root, fixed)
     summary.preflight = first
+    summary.warnings.push(...first.warnings)
+    summary.timing = options.timing ?? selectTiming()
+    summary.warnings.push(...summary.timing.warnings)
     if (!first.valid) throw new Error(first.reasons.join('; '))
     for (let i = 1; i <= 16; i++) {
       const name = `tests/feature-${String(i).padStart(2, '0')}.test.ts`
@@ -179,7 +173,7 @@ export async function measure(root = ROOT, runner = runProcess) {
     for (const [index, variant] of ORDER.entries()) {
       const runDirectory = join(output, `${index + 1}-${variant}`)
       await mkdir(runDirectory)
-      const record = { sequence: index + 1, variant, attempt: Math.floor(index / 2) + 1, valid: false, reasons: [], wallMs: null, exitCode: null, jsonPresent: false, directory: relative(root, runDirectory) }
+      const record = { sequence: index + 1, variant, attempt: Math.floor(index / 2) + 1, valid: false, reasons: [], warnings: [], wallMs: null, exitCode: null, jsonPresent: false, directory: relative(root, runDirectory) }
       summary.records.push(record)
       try {
         for (const [name, bytes] of originalTests) {
@@ -188,6 +182,8 @@ export async function measure(root = ROOT, runner = runProcess) {
         }
         const before = await checkConditions(root, fixed, variant)
         record.before = before
+        if (JSON.stringify(before.observed) !== JSON.stringify(summary.preflight.observed)) before.reasons.push('environment_changed_during_batch')
+        before.valid = before.reasons.length === 0
         if (!before.valid) { record.reasons.push(...before.reasons); continue }
         await rm(join(root, 'node_modules/.vite'), { recursive: true, force: true })
         const rawPath = join(runDirectory, 'vitest.json'), coverageDir = join(runDirectory, 'coverage')
@@ -195,8 +191,9 @@ export async function measure(root = ROOT, runner = runProcess) {
         const env = { ...process.env, CI: 'true', TZ: 'UTC', NODE_DISABLE_COMPILE_CACHE: '1', NODE_OPTIONS: '' }
         delete env.NODE_COMPILE_CACHE
         record.command = [process.execPath, ...args]
-        // Bash time includes child CPU usage; wall time is measured separately.
-        const result = await runner('bash', ['-c', 'TIMEFORMAT="__P29_CPU_USER=%U __P29_CPU_SYSTEM=%S"; time "$@"', 'p29-time', process.execPath, ...args], { cwd: root, env })
+        // CPU timing is optional; choose one mode before starting the batch.
+        const command = measurementCommand(args, summary.timing)
+        const result = await runner(command.command, command.args, { cwd: root, env })
         record.process = { startedAt: result.startedAt, endedAt: result.endedAt, signal: result.signal, spawnError: result.spawnError }
         record.exitCode = result.code
         record.wallMs = Math.round(result.wallMs)
@@ -209,11 +206,14 @@ export async function measure(root = ROOT, runner = runProcess) {
         catch (e) { record.reasons.push(`coverage_unavailable: ${e.code ?? e.message}`) }
         const after = await checkConditions(root, fixed, variant)
         record.after = after
-        const checked = validateOutputs(result, json, coverage, after.manifest, root)
+        if (JSON.stringify(after.observed) !== JSON.stringify(summary.preflight.observed)) after.reasons.push('environment_changed_during_batch')
+        after.valid = after.reasons.length === 0
+        record.warnings = [...new Set([...before.warnings, ...after.warnings, ...summary.timing.warnings])]
+        const checked = validateOutputs(result, json, coverage, after.manifest, root, summary.timing.cpuAvailable)
         record.reasons.push(...after.reasons, ...checked.reasons)
         record.reasons = [...new Set(record.reasons)]
         record.valid = record.reasons.length === 0
-        record.totalRunnerCpuMs = checked.totalRunnerCpuMs
+        record.totalRunnerCpuMs = summary.timing.cpuAvailable ? checked.totalRunnerCpuMs : null
         record.vitestDurationLine = checked.vitestDurationLine
         record.testCounts = json ? { total: json.numTotalTests, passed: json.numPassedTests, failed: json.numFailedTests, skipped: json.numPendingTests, todo: json.numTodoTests } : null
         record.coverageTotals = coverage?.total ?? null
@@ -235,7 +235,7 @@ export async function measure(root = ROOT, runner = runProcess) {
     if (summary.complete && summary.evidenceKind === 'real-vitest-local') {
       summary.comparison = Object.fromEntries(['baseline', 'candidate'].map(variant => {
         const rows = summary.records.filter(r => r.valid && r.variant === variant)
-        return [variant, { samples: rows.length, medianWallMs: median(rows.map(r => r.wallMs)), medianCpuMs: median(rows.map(r => r.totalRunnerCpuMs)) }]
+        return [variant, { samples: rows.length, medianWallMs: median(rows.map(r => r.wallMs)), medianCpuMs: rows.every(r => r.totalRunnerCpuMs !== null) ? median(rows.map(r => r.totalRunnerCpuMs)) : null }]
       }))
     }
     summary.endedAt = new Date().toISOString()
@@ -246,6 +246,6 @@ export async function measure(root = ROOT, runner = runProcess) {
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const { output, summary, exitCode } = await measure()
-  console.log(JSON.stringify({ output, complete: summary.complete, validCount: summary.validCount, invalidCount: summary.invalidCount, fatalReasons: summary.fatalReasons, comparison: summary.comparison }, null, 2))
+  console.log(JSON.stringify({ output, complete: summary.complete, validCount: summary.validCount, invalidCount: summary.invalidCount, fatalReasons: summary.fatalReasons, warnings: summary.warnings, timing: summary.timing, comparison: summary.comparison }, null, 2))
   process.exitCode = exitCode
 }

@@ -149,11 +149,11 @@ jobs:
           set -euo pipefail
           { date --utc --iso-8601=seconds; npm run failure-check; date --utc --iso-8601=seconds; } 2>&1 | tee "$P29_EVIDENCE/failure-check.log"
 
-      - name: Run 26 helper regressions (includes simulated results)
+      - name: Run helper regressions (includes simulated results)
         id: helpers
         run: |
           set -euo pipefail
-          { date --utc --iso-8601=seconds; node --test --test-concurrency=1 scripts/check-manifest.test.mjs scripts/check-measure.test.mjs scripts/check-failure.test.mjs; date --utc --iso-8601=seconds; } 2>&1 | tee "$P29_EVIDENCE/helper-regressions.log"
+          { date --utc --iso-8601=seconds; node --test --test-concurrency=1 scripts/check-manifest.test.mjs scripts/check-measure.test.mjs scripts/check-failure.test.mjs scripts/check-environment.test.mjs; date --utc --iso-8601=seconds; } 2>&1 | tee "$P29_EVIDENCE/helper-regressions.log"
 
       - name: Verify fixed manifest after restoration
         id: manifest_after

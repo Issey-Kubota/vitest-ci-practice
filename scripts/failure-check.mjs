@@ -3,6 +3,7 @@ import { spawn } from 'node:child_process'
 import { createHash, randomUUID } from 'node:crypto'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
+import { checkEnvironment } from './environment.mjs'
 import { verifyManifest } from './verify-manifest.mjs'
 
 export const TARGET_ID = 'feature-01 round-trips a catalogue key'
@@ -116,10 +117,11 @@ export async function runFailureCheck(root) {
     const precheck = await verifyManifest(root)
     summary.precheck = precheck
     if (!precheck.valid) throw new Error(`manifest_precheck_failed: ${precheck.reasons.join('; ')}`)
-    const pkg = JSON.parse(await readFile(join(root, 'package.json'), 'utf8'))
-    const vitest = JSON.parse(await readFile(join(root, 'node_modules/vitest/package.json'), 'utf8'))
-    summary.versions = { node: process.versions.node, vitest: vitest.version, expectedNode: pkg.engines.node, expectedVitest: pkg.devDependencies.vitest }
-    if (process.versions.node !== pkg.engines.node || vitest.version !== pkg.devDependencies.vitest) throw new Error('fixed_environment_version_mismatch')
+    const fixed = JSON.parse(await readFile(join(root, 'reference/measurement-conditions.json'), 'utf8'))
+    summary.environment = await checkEnvironment(root, fixed)
+    summary.versions = summary.environment.observed
+    summary.warnings = summary.environment.warnings
+    if (!summary.environment.valid) throw new Error(summary.environment.reasons.join('; '))
     const sourcePath = join(root, 'src/features/feature-01.ts')
     originals.set(sourcePath, await readFile(sourcePath))
     const originalSource = originals.get(sourcePath).toString('utf8')
@@ -174,7 +176,7 @@ export async function runFailureCheck(root) {
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
   try {
     const summary = await runFailureCheck(dirname(dirname(fileURLToPath(import.meta.url))))
-    console.log(JSON.stringify({ passed: summary.passed, directory: summary.directory, reasons: summary.reasons, records: summary.records.map(({ variant, scenario, classification, passed }) => ({ variant, scenario, classification, passed })), restored: summary.restoration.every(record => record.restored) }, null, 2))
+    console.log(JSON.stringify({ passed: summary.passed, directory: summary.directory, reasons: summary.reasons, warnings: summary.warnings ?? [], records: summary.records.map(({ variant, scenario, classification, passed }) => ({ variant, scenario, classification, passed })), restored: summary.restoration.every(record => record.restored) }, null, 2))
     process.exitCode = summary.passed ? 0 : 1
   } catch (error) {
     console.error(`failure_check_failed: ${error.message}`)
