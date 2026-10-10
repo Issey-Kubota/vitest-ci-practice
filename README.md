@@ -173,3 +173,7 @@ Use [GitHub Issues](https://github.com/Issey-Kubota/vitest-ci-practice/issues). 
 ## License
 
 [MIT License](LICENSE)
+
+## Compare worker limits
+
+To explore a second optimization method while keeping imports fixed, run `npm run measure:workers` once. It compares maximum worker limits 1, 2 and 4 with five measurements each. See [the worker comparison guide](docs/worker-comparison.md) for the method, result fields and limitations. This experiment has no published performance results yet.

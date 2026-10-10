@@ -13,7 +13,7 @@
   "arch": "x64",
   "files": {
     "package-lock.json": "10023bf5ec08e45b6a0cf367defa08bca83108f94bf91b1608eb72bc70aa5cd7",
-    "package.json": "13e430c40095926eb8b6d740e13c809bc23f54debb91562dc4e2be64081ed956",
+    "package.json": "082031792560c473e87279e43b27688c51c1f0c6de0f1efecfdde9652afb2948",
     "src/features/feature-01.ts": "a46e39ea3826304559a56226021fa6eef5fa04c5b096f915f952a3c1f1d1a398",
     "src/features/feature-02.ts": "80a724a92ea562eef8968e6143b87946f3131438ad83a7acfd2be87489f548ef",
     "src/features/feature-03.ts": "ca0c520b1af2c2dadaad710869f469e57816876045a48fbdc7d064290b2fa5d5",
