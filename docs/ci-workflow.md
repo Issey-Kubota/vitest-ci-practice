@@ -51,3 +51,7 @@ Actions dependency caching is disabled, and npm starts with an empty cache direc
 The Vite cache is cleared for each run and the Node compile cache is disabled. OS page caches and host load are not controlled. The same runner label does not guarantee identical hardware. CPU time is also distinct from runner occupancy and billable time.
 
 The measurement helper uses the fixed label `evidenceKind: real-vitest-local` for actual child-process execution, including CI. Use `run-context.json` and the GitHub run page to establish where execution took place.
+
+## Reference CI versus local environments
+
+The included CI deliberately retains its historical exact Node.js/npm setup for a repeatable reference run. Local use accepts compatible Node release families and records differences as warnings. A previous CI success does not verify the current portability changes or Windows/macOS execution. Additional CI runs require their own execution approval.

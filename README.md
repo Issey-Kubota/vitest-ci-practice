@@ -7,7 +7,7 @@ This repository is for developers learning how to evaluate test performance loca
 ## Features
 
 - Run baseline and candidate tests three times each, in alternating order.
-- Record wall time and CPU time while preserving test IDs, assertions, snapshots, and coverage settings.
+- Record wall time and optional CPU time while preserving test IDs, assertions, snapshots, and coverage settings.
 - Inject a known implementation defect and check that both import variants detect it.
 - Save reports, coverage, and logs, distinguishing valid measurements from invalid ones.
 - Run the validation workflow locally or through GitHub Actions.
@@ -25,7 +25,11 @@ Only the import path changes across the 16 test files. Both variants retain 32 t
 
 ## Requirements
 
-Measurement targets **Linux x64**. GitHub Actions uses Ubuntu 24.04. On Windows, use a Linux environment such as WSL2 with the required Node.js and npm versions, or use GitHub Actions. Native Windows measurement is not supported.
+Use an existing **compatible Node.js environment**; the sample no longer requires Linux x64 or exact Node.js/npm versions. Supported Node release families are **22.12+ within 22.x, 24.x, and 26+**, matching the bundled Vitest requirements. Node 20, 23, and 25 are outside that dependency's supported range.
+
+OS, architecture, and version differences from the historical environment are recorded as warnings, not rejected. Dependencies are installed from the committed lockfile. Missing dependencies and an incompatible Node release still stop execution.
+
+The table below describes the reference environment used for earlier measurements and the included CI, not a required local setup. Native Windows execution uses Node directly, without Bash. Windows/macOS execution paths have regression coverage but have not yet been verified by an end-to-end run on those operating systems. Linux remains the previously measured environment.
 
 | Component | Version or setting |
 |---|---|
@@ -37,11 +41,11 @@ Measurement targets **Linux x64**. GitHub Actions uses Ubuntu 24.04. On Windows,
 | Parallelism | 4 workers, fileParallelism enabled |
 | Coverage thresholds | 95% lines / functions / statements; 75% branches |
 
-Use the specified versions to keep comparison conditions consistent. Dependencies are installed from the committed `package-lock.json`.
+Keep the same environment for both variants in one batch. Actual versions are recorded in the output; a change during the batch invalidates the comparison. Results from different environments or commits are separate observations.
 
 ## Quick start
 
-Install Git and the required Node.js and npm versions first. Initial dependency installation requires network access.
+Install Git, a compatible Node.js release, and npm first. Initial dependency installation requires network access.
 
 ```bash
 git clone https://github.com/Issey-Kubota/vitest-ci-practice.git
@@ -75,7 +79,7 @@ npm run verify:manifest
 
 The manifest check accepts either a consistent baseline or a consistent candidate. It does not itself prove that the final files are identical to their starting state. **The measurement script verifies that restoration is byte-for-byte identical to the starting contents and records the result as `restoration.restored` in `summary.json`.**
 
-Successful manifest checks print `valid: true`. If a command fails, inspect `reasons` or `fatalReasons` before continuing. Node.js and dependency versions, source files, the lockfile, and Vitest configuration are checked separately by `measure`.
+Successful manifest checks print `valid: true`. If a command fails, inspect `reasons` or `fatalReasons` before continuing. Runtime compatibility, source files, the lockfile, and Vitest configuration are checked separately by `measure`. Environment differences are listed in `warnings`; blocking errors remain in `fatalReasons`. Use `npm ci` to install the bundled dependency versions.
 
 **Use a working copy without uncommitted changes.** Do not edit the sample or run concurrent measurements while these commands are running.
 
@@ -93,7 +97,7 @@ Each measurement creates a new `artifacts/measure-*/` directory.
 
 First check that all six runs are valid, then compare individual values and medians. Startup failures, missing or stale output, and mismatched conditions or tests invalidate a measurement and cause the command to fail. Missing measurements are never treated as zero seconds.
 
-Wall time is elapsed time from start to finish. CPU time is summed across processes, including parallel workers, and may exceed wall time. It is not CI runner occupancy or billable time.
+Wall time is elapsed time from start to finish. When Bash is available on a non-Windows host, CPU time is summed across processes, including parallel workers, and may exceed wall time. It is not CI runner occupancy or billable time. Without Bash (including native Windows), all six runs use wall-only timing: CPU fields are `null`, a warning explains why, and valid wall-time comparisons are still produced.
 
 Results vary by environment and execution. `artifacts/` is created at runtime and excluded from Git; historical measurement files are not bundled.
 
@@ -142,7 +146,7 @@ Only a new run on `main` is accepted. Use **Run workflow** again instead of **Re
 After changing measurement or validation helpers, run:
 
 ```bash
-node --test --test-concurrency=1 scripts/check-manifest.test.mjs scripts/check-measure.test.mjs scripts/check-failure.test.mjs
+node --test --test-concurrency=1 scripts/check-manifest.test.mjs scripts/check-measure.test.mjs scripts/check-failure.test.mjs scripts/check-environment.test.mjs
 ```
 
 These tests include simulated error cases. `scripts/fixtures/vitest-success.json` is minimal test input, not performance evidence. Historical execution logs are not required.
@@ -160,7 +164,7 @@ These tests include simulated error cases. `scripts/fixtures/vitest-success.json
 
 Reference, test, and protected-input comparisons treat CRLF as LF. Whitespace, expectations, code, and all other changes are still checked. Validation does not rewrite the files. Restoration preserves the original bytes, including the original line endings. Comparison hashes describe LF-normalized contents.
 
-`.gitattributes` requests LF for Git checkouts. Existing CRLF working copies are also accepted by the validators. This does not add native Windows measurement support; `measure` still requires Linux x64.
+`.gitattributes` requests LF for Git checkouts. Existing CRLF working copies are also accepted by the validators. The measurement script also avoids Windows command shims and normalizes report path separators. Native Windows end-to-end validation is still pending.
 
 ## Issues and questions
 

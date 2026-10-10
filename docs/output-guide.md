@@ -57,7 +57,7 @@ After completing all six runs, `npm run measure` prints a summary like this:
 | `comparison` | Comparison of valid real measurements; `null` when unavailable |
 | `samples` | Number of valid samples for that variant |
 | `medianWallMs` | Median elapsed time in milliseconds; 2226 ms is 2.226 seconds |
-| `medianCpuMs` | Median total CPU time in milliseconds, including parallel workers |
+| `medianCpuMs` | Median total CPU time in milliseconds, including parallel workers; `null` in wall-only mode |
 
 In this example, median wall time decreases from 2.226 to 1.517 seconds: a reduction of 0.709 seconds, or about 31.9%. CPU time sums work across processes and can exceed wall time. It is not CI runner occupancy or billable time.
 
@@ -216,7 +216,7 @@ The actual file also contains per-source-file entries. High coverage alone does 
 
 ## 4. Stopping before measurement
 
-This illustrative example shows a Node.js version mismatch. It is not a performance measurement:
+This illustrative example shows an unsupported Node.js release. It is not a performance measurement:
 
 ```json
 {
@@ -225,7 +225,7 @@ This illustrative example shows a Node.js version mismatch. It is not a performa
   "validCount": 0,
   "invalidCount": 0,
   "fatalReasons": [
-    "condition_mismatch: Node v24.21.0; expected v24.19.0"
+    "unsupported_runtime: Node v20.19.0; requires ^22.12.0 || ^24.0.0 || >=26.0.0"
   ],
   "comparison": null
 }
@@ -235,12 +235,17 @@ This illustrative example shows a Node.js version mismatch. It is not a performa
 
 | Reason | What to check |
 |---|---|
-| `condition_mismatch: Node ...` | Whether Node.js is exactly 24.19.0 |
-| `condition_mismatch: platform/architecture` | Whether execution is on Linux x64 |
-| `environment_error: npm version unavailable` | Whether the process can launch npm |
+| `unsupported_runtime: Node ...` | Whether the Node release is supported by the bundled Vitest dependency |
+| `environment_error: ... unavailable` | Whether dependencies were installed with `npm ci` |
+| `incompatible_dependencies: ...` | Whether Vitest and its coverage provider have matching versions |
+| `environment_changed_during_batch` | Whether actual runtime metadata changed during the six runs |
 | `condition_mismatch: changed ...` | Whether the named file's contents changed |
 
-Native Windows execution of `measure` is unsupported. Use Linux, such as WSL2 with the required Node.js/npm versions, or GitHub Actions. LF/CRLF compatibility does not imply native Windows measurement support.
+Differences from the reference OS, architecture, Node.js, npm, or package versions are recorded as `reference_environment_differs` warnings. They do not themselves invalidate a run. Missing npm version metadata also only warns: Vitest is launched directly through Node. Existing dependency versions and report compatibility still matter; install the committed lockfile with `npm ci`.
+
+`summary.json` includes `preflight.observed`, `warnings`, and `timing`. The console also prints `warnings` and `timing`. The default timing mode is `bash-time` when Bash is available on a non-Windows host, otherwise `wall-only`. The backend is chosen once for the whole batch. In wall-only mode, `totalRunnerCpuMs` and `medianCpuMs` are `null`, not zero; valid wall-time comparisons still work.
+
+Native Windows and macOS end-to-end runs are not yet verified. Regression tests cover runtime differences, direct invocation with paths containing spaces, and absent Bash/CPU metadata. These simulated cases are not operating-system performance evidence.
 
 After measurement starts, invalid run reasons are saved in `summary.json` under `records` and in each `record.json`. No comparison is produced unless all six runs are valid.
 
@@ -251,7 +256,7 @@ After measurement starts, invalid run reasons are saved in `summary.json` under 
 | `test_id_mismatch` | Reported tests differ from the required identities |
 | `snapshot_mismatch` | Snapshot preservation conditions were not met |
 | `missing_coverage_summary` | Coverage summary is missing |
-| `missing_cpu_timing` | CPU timing could not be obtained |
+| `missing_cpu_timing` | CPU timing was selected as available but its expected output is missing (wall-only mode does not require it) |
 
 Do not replace missing values with zero or discard invalid runs to compare only successful samples.
 

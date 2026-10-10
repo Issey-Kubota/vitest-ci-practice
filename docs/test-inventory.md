@@ -14,7 +14,7 @@ There are 32 tests, 48 assertions, and 16 inline snapshots in total. The baselin
 `reference/` contains the fixed inputs used by the validators, not historical execution results.
 
 - `baseline-tests.json`: full baseline test contents and the permitted import substitutions. `verify:manifest` checks the file inventory and full contents, detecting changed expectations, snapshots, test IDs, and added or missing files.
-- `measurement-conditions.json`: Node.js/dependency versions and hashes of source, configuration, and lockfiles. `measure` uses these to verify consistent conditions.
+- `measurement-conditions.json`: historical environment versions and hashes of source, configuration, and lockfiles. Version/OS differences warn; protected-file changes still block measurement. Actual runtime metadata must remain identical within a batch.
 
 The scripts also verify the reference JSON hashes themselves. Do not edit or regenerate the references during normal execution. Provenance identifiers in the JSON are part of the fixed references; you do not need to obtain historical archives or logs.
 
@@ -32,4 +32,4 @@ Reference, test, and protected-input comparisons normalize CRLF to LF. Differenc
 
 `.gitattributes` requests LF for Git checkouts. The validators also accept CRLF files left in older working copies.
 
-This is separate from native Windows measurement support. `measure` requires Linux x64. On Windows, use a Linux environment such as WSL2 with the specified Node.js/npm versions.
+Native Windows now uses direct Node execution and wall-only timing, with CPU fields set to null. OS/architecture differences do not block execution. Windows and macOS end-to-end runs have not yet been verified; see the README for runtime compatibility and the distinction between regression coverage and real execution.

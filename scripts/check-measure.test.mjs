@@ -158,3 +158,45 @@ test('CRLF protected inputs validate and original CRLF tests are restored', asyn
   const changed = await measure(dir, async () => { throw new Error('must not execute') })
   assert.ok(changed.summary.fatalReasons.some(reason => reason.includes('changed vitest.config.ts')))
 })
+
+// Portable timing still requires every fresh report and exact test/coverage preservation.
+test('wall-only batches accept missing CPU timing, retain null CPU values and restore tests', async () => {
+  const dir = await fixture('wall-only')
+  const before = await readFile(join(dir, 'tests/feature-01.test.ts'))
+  const r = await measure(dir, async (command, args) => {
+    assert.equal(command, process.execPath)
+    const result = { ...processResult, stderr: '', startedAt: Date.now(), endedAt: Date.now() }
+    const report = structuredClone(old)
+    report.startTime = result.startedAt
+    for (const suite of report.testResults) suite.name = suite.name.replace(fixtureRoot, dir)
+    const raw = args.find(x => x.startsWith('--outputFile.json=')).slice('--outputFile.json='.length)
+    const coverageDir = args.find(x => x.startsWith('--coverage.reportsDirectory=')).slice('--coverage.reportsDirectory='.length)
+    await mkdir(coverageDir, { recursive: true })
+    await writeFile(raw, JSON.stringify(report))
+    await writeFile(join(coverageDir, 'coverage-summary.json'), JSON.stringify(Object.fromEntries(Object.entries(cov).map(([k,v]) => [k.replace(fixtureRoot, dir), v]))))
+    return result
+  }, { timing: { mode: 'wall-only', cpuAvailable: false, warnings: ['cpu_timing_unavailable'] } })
+  assert.equal(r.summary.complete, true)
+  assert.equal(r.summary.validCount, 6)
+  assert.ok(r.summary.records.every(record => record.totalRunnerCpuMs === null))
+  assert.equal(r.summary.comparison, null) // Synthetic reports are never performance evidence.
+  assert.deepEqual(await readFile(join(dir, 'tests/feature-01.test.ts')), before)
+})
+
+test('changing runtime metadata during a batch rejects the comparison', async () => {
+  const dir = await fixture('environment-drift')
+  const initialAgent = process.env.npm_config_user_agent
+  try {
+    const r = await measure(dir, async () => {
+      process.env.npm_config_user_agent = 'npm/99.0.0 node/v24.19.0 linux x64'
+      return { ...processResult, startedAt: Date.now(), endedAt: Date.now() }
+    })
+    assert.equal(r.summary.complete, false)
+    assert.ok(r.summary.records.some(record => record.reasons.includes('environment_changed_during_batch')))
+    assert.equal(r.summary.comparison, null)
+    assert.equal(r.summary.restoration.restored, true)
+  } finally {
+    if (initialAgent === undefined) delete process.env.npm_config_user_agent
+    else process.env.npm_config_user_agent = initialAgent
+  }
+})
