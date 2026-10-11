@@ -14,7 +14,8 @@
     "test:candidate": "npm run variant:candidate && vitest run --config vitest.config.ts --coverage --reporter=default --reporter=json --outputFile.json=results/current.json",
     "verify:manifest": "node scripts/verify-manifest.mjs",
     "measure": "node scripts/measure.mjs",
-    "failure-check": "node scripts/failure-check.mjs"
+    "failure-check": "node scripts/failure-check.mjs",
+    "measure:workers": "node scripts/measure-workers.mjs"
   },
   "devDependencies": {
     "@vitest/coverage-v8": "5.0.1",

@@ -200,3 +200,29 @@ test('changing runtime metadata during a batch rejects the comparison', async ()
     else process.env.npm_config_user_agent = initialAgent
   }
 })
+
+test('worker comparison schedules five runs per limit and preserves imports in every run', async () => {
+  const dir = await fixture('worker-comparison')
+  const before = await readFile(join(dir, 'tests/feature-01.test.ts'))
+  const r = await measure(dir, async (command, args) => {
+    assert.equal(command, process.execPath)
+    assert.deepEqual(await readFile(join(dir, 'tests/feature-01.test.ts')), before)
+    assert.ok(args.some(arg => /^--maxWorkers=[124]$/.test(arg)))
+    const result = { ...processResult, stderr: '', startedAt: Date.now(), endedAt: Date.now() }
+    const report = structuredClone(old)
+    report.startTime = result.startedAt
+    for (const suite of report.testResults) suite.name = suite.name.replace(fixtureRoot, dir)
+    const raw = args.find(x => x.startsWith('--outputFile.json=')).slice('--outputFile.json='.length)
+    const coverageDir = args.find(x => x.startsWith('--coverage.reportsDirectory=')).slice('--coverage.reportsDirectory='.length)
+    await mkdir(coverageDir, { recursive: true })
+    await writeFile(raw, JSON.stringify(report))
+    await writeFile(join(coverageDir, 'coverage-summary.json'), JSON.stringify(Object.fromEntries(Object.entries(cov).map(([k,v]) => [k.replace(fixtureRoot, dir), v]))))
+    return result
+  }, { experiment: 'workers', timing: { mode: 'wall-only', cpuAvailable: false, warnings: ['cpu_timing_unavailable'] } })
+  assert.equal(r.summary.complete, true)
+  assert.equal(r.summary.validCount, 15)
+  assert.ok(r.summary.records.every(record => record.totalRunnerCpuMs === null))
+  for (const workers of [1, 2, 4]) assert.equal(r.summary.records.filter(record => record.workers === workers).length, 5)
+  assert.equal(r.summary.comparison, null) // Synthetic reports are never performance evidence.
+  assert.deepEqual(await readFile(join(dir, 'tests/feature-01.test.ts')), before)
+})

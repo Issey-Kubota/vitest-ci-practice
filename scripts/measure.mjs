@@ -11,7 +11,7 @@ import os from 'node:os'
 import { verifyManifest } from './verify-manifest.mjs'
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url))
-const CONDITIONS_HASH = '8fa5232c8170cdaa633634b353bcd1022068a06e79f1379b4e15bc291d203cee'
+const CONDITIONS_HASH = '2d539815e4580bdad8d27dde2f02f636d14524125901e7952076422c77e5e495'
 const ORDER = ['baseline', 'candidate', 'baseline', 'candidate', 'baseline', 'candidate']
 /**
  * Fingerprint a protected text input after CRLF normalization.
@@ -141,16 +141,22 @@ export function validateOutputs(result, json, coverage, manifest, root, requireC
 }
 
 /**
- * Run six interleaved comparisons, preserve evidence and restore the original tests.
+ * Run interleaved import or worker comparisons, preserve evidence and restore the original tests.
  * @param {string} root - Sample root; defaults to this repository.
  * @param {Function} runner - Async process runner; defaults to real execution and supports regression injection.
- * @param {object} options - Optional timing backend override for regression tests.
+ * @param {object} options - Timing backend override for regression tests and experiment (workers or default import comparison).
  * @returns {Promise<object>} Output directory, complete summary and exitCode (0 only for a valid restored batch).
  */
 export async function measure(root = ROOT, runner = runProcess, options = {}) {
   await mkdir(join(root, 'artifacts'), { recursive: true })
   const output = await mkdtemp(join(root, 'artifacts', 'measure-'))
   const summary = { schemaVersion: 3, helperVersion: 'portable-runtime-1', evidenceKind: runner === runProcess ? 'real-vitest-local' : 'regression-harness-not-performance', startedAt: new Date().toISOString(), records: [], validCount: 0, invalidCount: 0, comparison: null, complete: false, fatalReasons: [], warnings: [], restoration: null }
+  const workerExperiment = options.experiment === 'workers'
+  const order = workerExperiment ? [1, 2, 4, 2, 4, 1, 4, 1, 2, 1, 4, 2, 4, 2, 1] : ORDER
+  const groups = workerExperiment ? ['workers-1', 'workers-2', 'workers-4'] : ['baseline', 'candidate']
+  summary.experiment = workerExperiment ? 'worker-count' : 'import-variant'
+  summary.plannedRuns = order.length
+  summary.design = { order, changedVariable: workerExperiment ? 'maxWorkers' : 'import path', coverageEnabled: true, warmupRuns: 0 }
   const originalTests = new Map()
   try {
     const reference = await readFile(join(root, 'reference/measurement-conditions.json'))
@@ -170,13 +176,16 @@ export async function measure(root = ROOT, runner = runProcess, options = {}) {
       originalTests.set(name, await readFile(join(root, name)))
     }
     // Interleave variants to limit ordering bias; retain every failed attempt.
-    for (const [index, variant] of ORDER.entries()) {
-      const runDirectory = join(output, `${index + 1}-${variant}`)
+    for (const [index, condition] of order.entries()) {
+      const variant = workerExperiment ? first.manifest.variant : condition
+      const group = workerExperiment ? `workers-${condition}` : variant
+      const runDirectory = join(output, `${index + 1}-${group}`)
       await mkdir(runDirectory)
-      const record = { sequence: index + 1, variant, attempt: Math.floor(index / 2) + 1, valid: false, reasons: [], warnings: [], wallMs: null, exitCode: null, jsonPresent: false, directory: relative(root, runDirectory) }
+      const record = { sequence: index + 1, variant, group, workers: workerExperiment ? condition : 4, attempt: summary.records.filter(r => r.group === group).length + 1, valid: false, reasons: [], warnings: [], wallMs: null, exitCode: null, jsonPresent: false, directory: relative(root, runDirectory) }
       summary.records.push(record)
       try {
         for (const [name, bytes] of originalTests) {
+          if (workerExperiment) continue
           const id = name.match(/feature-(\d{2})/)[1]
           await writeFile(join(root, name), bytes.toString('utf8').replace(/from '\.\.\/src\/features\/(?:index|feature-\d{2})\.js'/, `from '../src/features/${variant === 'baseline' ? 'index' : `feature-${id}`}.js'`))
         }
@@ -188,6 +197,7 @@ export async function measure(root = ROOT, runner = runProcess, options = {}) {
         await rm(join(root, 'node_modules/.vite'), { recursive: true, force: true })
         const rawPath = join(runDirectory, 'vitest.json'), coverageDir = join(runDirectory, 'coverage')
         const args = ['node_modules/vitest/vitest.mjs', 'run', '--config', 'vitest.config.ts', '--coverage', `--coverage.reportsDirectory=${coverageDir}`, '--reporter=default', '--reporter=json', `--outputFile.json=${rawPath}`]
+        if (workerExperiment) args.push(`--maxWorkers=${condition}`)
         const env = { ...process.env, CI: 'true', TZ: 'UTC', NODE_DISABLE_COMPILE_CACHE: '1', NODE_OPTIONS: '' }
         delete env.NODE_COMPILE_CACHE
         record.command = [process.execPath, ...args]
@@ -230,12 +240,12 @@ export async function measure(root = ROOT, runner = runProcess, options = {}) {
     } catch (e) { summary.restoration = { restored: false, reason: e.message }; summary.fatalReasons.push(e.message) }
     summary.validCount = summary.records.filter(r => r.valid).length
     summary.invalidCount = summary.records.filter(r => !r.valid).length
-    summary.complete = summary.validCount === 6 && summary.invalidCount === 0 && summary.fatalReasons.length === 0 && summary.restoration.restored
+    summary.complete = summary.validCount === order.length && summary.invalidCount === 0 && summary.fatalReasons.length === 0 && summary.restoration.restored
     // Simulated regression outputs must never produce a performance comparison.
     if (summary.complete && summary.evidenceKind === 'real-vitest-local') {
-      summary.comparison = Object.fromEntries(['baseline', 'candidate'].map(variant => {
-        const rows = summary.records.filter(r => r.valid && r.variant === variant)
-        return [variant, { samples: rows.length, medianWallMs: median(rows.map(r => r.wallMs)), medianCpuMs: rows.every(r => r.totalRunnerCpuMs !== null) ? median(rows.map(r => r.totalRunnerCpuMs)) : null }]
+      summary.comparison = Object.fromEntries(groups.map(group => {
+        const rows = summary.records.filter(r => r.valid && r.group === group)
+        return [group, { minWallMs: Math.min(...rows.map(r => r.wallMs)), maxWallMs: Math.max(...rows.map(r => r.wallMs)), samples: rows.length, medianWallMs: median(rows.map(r => r.wallMs)), medianCpuMs: rows.every(r => r.totalRunnerCpuMs !== null) ? median(rows.map(r => r.totalRunnerCpuMs)) : null }]
       }))
     }
     summary.endedAt = new Date().toISOString()
